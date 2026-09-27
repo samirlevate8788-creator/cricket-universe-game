@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#071b20">
+  <meta name="description" content="Cricket Universe — a playable browser cricket prototype.">
+  <title>Cricket Universe — Quick Match</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f1f5ea;
+      --muted: #a6b7b0;
+      --bg: #071b20;
+      --panel: rgba(10, 34, 38, .92);
+      --line: rgba(173, 215, 198, .15);
+      --mint: #54e2ad;
+      --gold: #f8c465;
+      --red: #ff795f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100svh; color: var(--ink);
+      background: radial-gradient(ellipse at 48% -20%, #254e4e 0, #102c31 42%, var(--bg) 76%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: .01em;
+    }
+    button { font: inherit; color: inherit; touch-action: manipulation; }
+    .shell { max-width: 1240px; margin: 0 auto; padding: 22px 24px 28px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+    .brand { display: flex; align-items: center; gap: 13px; min-width: 0; }
+    .brand-mark { display: grid; place-items: center; width: 43px; height: 43px; border: 1px solid #67e3b0; border-radius: 14px; color: var(--mint); background: #0e3732; font-size: 23px; box-shadow: 0 0 28px #37c48a22; }
+    .brand h1 { font-size: clamp(17px, 2.3vw, 23px); margin: 0; letter-spacing: .13em; font-weight: 850; }
+    .brand small { display: block; color: var(--muted); font-size: 10px; font-weight: 650; letter-spacing: .2em; margin-top: 3px; }
+    .mode-tag { color: #d8e7dd; font-size: 11px; font-weight: 800; letter-spacing: .15em; padding: 10px 13px; border: 1px solid var(--line); border-radius: 999px; background: #0b262a99; }
+    .matchbar { display: grid; grid-template-columns: minmax(130px,1fr) auto minmax(130px,1fr); align-items: center; gap: 14px; padding: 15px 19px; border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(115deg, #103538ed, #0b262ced); box-shadow: 0 18px 55px #0002; }
+    .team { min-width: 0; }
+    .team.right { text-align: right; }
+    .team-name { display: block; font-size: 12px; color: #c8d8cf; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .score { display: block; margin-top: 3px; font-size: clamp(23px, 4vw, 35px); font-weight: 850; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+    .score small { font-size: .47em; font-weight: 650; color: #a8bbb1; letter-spacing: 0; }
+    .vs { text-align: center; color: #94ada2; font-size: 10px; letter-spacing: .14em; font-weight: 850; }
+    .vs strong { display: block; color: var(--gold); font-size: 12px; margin-bottom: 4px; }
+    .stats { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; padding: 13px 2px 11px; color: var(--muted); font-size: 11px; font-weight: 650; }
+    .stat { display: inline-flex; align-items: center; gap: 6px; }
+    .stat b { color: #e8f0e8; font-variant-numeric: tabular-nums; }
+    .sep { width: 3px; height: 3px; border-radius: 9px; background: #627e75; }
+    .stage { position: relative; height: clamp(270px, 47vw, 480px); overflow: hidden; border-radius: 22px; border: 1px solid #96d0ac26; background: #0b2428; box-shadow: 0 25px 70px #0004; }
+    canvas { width: 100%; height: 100%; display: block; }
+    .stage-top { position: absolute; inset: 13px 14px auto; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none; }
+    .phase-chip, .aim-chip { display: inline-flex; gap: 8px; align-items: center; border: 1px solid #d1ead429; border-radius: 999px; padding: 8px 11px; background: #061b1dcc; backdrop-filter: blur(10px); font-size: 10px; letter-spacing: .12em; font-weight: 800; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 12px var(--mint); }
+    .aim-chip { color: #d3e6dc; }
+    .callout { position: absolute; inset: auto 12px 13px; display: flex; justify-content: center; pointer-events: none; }
+    .callout span { max-width: 94%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 9px 15px; border: 1px solid #d1ead42c; border-radius: 999px; background: #061b1ddf; color: #f2f6ec; font-size: 12px; font-weight: 750; letter-spacing: .03em; box-shadow: 0 5px 22px #0003; }
+    .timing { padding: 18px 2px 10px; }
+    .timing-head { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .14em; margin: 0 2px 9px; }
+    .timing-head span:last-child { letter-spacing: .04em; font-weight: 650; }
+    .track { height: 10px; position: relative; overflow: hidden; border-radius: 99px; border: 1px solid #b3d9c32b; background: #132b2a; }
+    .sweetspot { position: absolute; left: 77%; top: 0; bottom: 0; width: 10%; background: #40d69b65; border-left: 1px solid #72f4bf; border-right: 1px solid #72f4bf; }
+    .needle { position: absolute; z-index: 1; left: 0; top: -3px; width: 3px; height: 16px; border-radius: 3px; background: #fff; box-shadow: 0 0 11px #fff; opacity: 0; transform: translateX(-1px); }
+    .track.active .needle { opacity: 1; }
+    .controls { display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: end; }
+    .left-controls { display: grid; grid-template-columns: repeat(3, minmax(72px, 112px)); gap: 9px; }
+    .right-controls { display: grid; grid-template-columns: minmax(126px, 172px) minmax(150px, 206px); gap: 9px; }
+    .btn { min-height: 56px; border: 1px solid #c2ddcf31; border-radius: 15px; background: linear-gradient(180deg, #133b3a, #0c292d); color: #dcebe0; cursor: pointer; font-size: 11px; font-weight: 850; letter-spacing: .11em; box-shadow: 0 8px 18px #0002; transition: transform .12s ease, border-color .12s ease, filter .12s ease; }
+    .btn:hover { border-color: #83e6b680; filter: brightness(1.13); }
+    .btn:active { transform: translateY(1px) scale(.99); }
+    .btn:focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; }
+    .btn:disabled { opacity: .48; cursor: default; filter: saturate(.5); }
+    .btn.primary { color: #06241c; border-color: #6cf0b8; background: linear-gradient(180deg, #72efbd, #36c88d); box-shadow: 0 8px 24px #3bce982e; }
+    .btn.shot { min-height: 64px; font-size: 13px; }
+    .btn.loft.on { border-color: #f6c66c88; color: #ffe0a1; background: linear-gradient(180deg, #594322, #332a1d); }
+    .btn .key { display: block; opacity: .62; font-size: 9px; font-weight: 700; letter-spacing: .07em; margin-top: 5px; }
+    .footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: #789188; font-size: 10px; margin-top: 17px; }
+    .footer a { color: #9eb9ad; text-decoration: none; }
+    .footer a:hover { color: var(--mint); }
+    @media (max-width: 650px) {
+      .shell { padding: 14px 12px 20px; }
+      .topbar { margin-bottom: 12px; }
+      .brand-mark { width: 38px; height: 38px; border-radius: 12px; }
+      .mode-tag { font-size: 9px; padding: 8px 9px; }
+      .matchbar { gap: 7px; padding: 11px 12px; border-radius: 15px; }
+      .team-name { font-size: 9px; letter-spacing: .04em; }
+      .score { font-size: 25px; }
+      .stats { gap: 6px; font-size: 9px; padding-top: 10px; }
+      .stage { height: clamp(260px, 67vw, 390px); border-radius: 17px; }
+      .stage-top { inset: 9px 9px auto; }
+      .phase-chip, .aim-chip { font-size: 8px; padding: 7px 8px; }
+      .callout span { font-size: 10px; }
+      .timing { padding-top: 14px; }
+      .controls { grid-template-columns: 1fr; gap: 9px; }
+      .left-controls { grid-template-columns: repeat(3, 1fr); }
+      .right-controls { grid-template-columns: .85fr 1.15fr; }
+      .btn { min-height: 51px; border-radius: 13px; font-size: 10px; }
+      .btn.shot { min-height: 58px; }
+      .footer { font-size: 9px; }
+    }
+    @media (max-width: 390px) {
+      .mode-tag { letter-spacing: .07em; }
+      .brand h1 { letter-spacing: .08em; }
+      .score { font-size: 22px; }
+      .stage { height: 250px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">CU</div>
+        <div><h1>CRICKET UNIVERSE</h1><small>PLAY YOUR MOMENT</small></div>
+      </div>
+      <div class="mode-tag">QUICK MATCH <span style="color:var(--mint)">/</span> 2 OVERS</div>
+    </header>
+
+    <section class="matchbar" aria-label="Match score">
+      <div class="team"><span id="teamA" class="team-name">HARBOR HAWKS</span><span id="scoreA" class="score">0<small> / 0</small></span></div>
+      <div class="vs"><strong id="inningsLabel">INNINGS 1</strong>VS</div>
+      <div class="team right"><span id="teamB" class="team-name">SUMMIT STRIKERS</span><span id="scoreB" class="score">0<small> / 0</small></span></div>
+    </section>
+    <div class="stats" aria-live="polite">
+      <span class="stat" id="oversStat">OVERS <b>0.0 / 2</b></span><i class="sep"></i>
+      <span class="stat" id="rateStat">RUN RATE <b>0.00</b></span><i class="sep"></i>
+      <span class="stat" id="targetStat">TARGET <b>36</b></span><i class="sep"></i>
+      <span class="stat" id="needStat">NEED <b>36 OFF 12</b></span>
+    </div>
+
+    <section class="stage" aria-label="Cricket match view">
+      <canvas id="stadium" aria-label="Animated fictional cricket stadium"></canvas>
+      <div class="stage-top">
+        <span class="phase-chip"><i class="live-dot"></i><span id="phaseLabel">READY TO BOWL</span></span>
+        <span class="aim-chip">SHOT AIM&nbsp; <b id="aimLabel">STRAIGHT</b></span>
+      </div>
+      <div class="callout"><span id="callout" aria-live="assertive">Your innings. Bowl when ready.</span></div>
+    </section>
+
+    <section class="timing" aria-label="Shot timing guide">
+      <div class="timing-head"><span>SHOT TIMING</span><span>HIT IN THE MINT ZONE</span></div>
+      <div id="timingTrack" class="track"><div class="sweetspot"></div><div id="needle" class="needle"></div></div>
+    </section>
+
+    <section class="controls" aria-label="Match controls">
+      <div class="left-controls">
+        <button class="btn" id="aimLeft" aria-label="Aim left">AIM LEFT<span class="key">←</span></button>
+        <button class="btn" id="toggleLoft" aria-pressed="false">GROUND<span class="key">SHIFT</span></button>
+        <button class="btn" id="aimRight" aria-label="Aim right">AIM RIGHT<span class="key">→</span></button>
+      </div>
+      <div class="right-controls">
+        <button class="btn" id="runBtn">RUN<span class="key">CALL A SINGLE</span></button>
+        <button class="btn primary shot" id="shotBtn" disabled>SHOT<span class="key">SPACE</span></button>
+        <button class="btn primary" id="mainBtn">BOWL<span class="key">ENTER</span></button>
+      </div>
+    </section>
+
+    <footer class="footer"><span>Fictional teams. Built for the browser.</span><a href="https://github.com/" id="repoLink" target="_blank" rel="noreferrer">SOURCE REPOSITORY ↗</a></footer>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+      const $ = (id) => document.getElementById(id);
+      const canvas = $('stadium');
+      const ctx = canvas.getContext('2d');
+      const teams = ['Harbor Hawks', 'Summit Strikers'];
+      const config = { overs: 2, wickets: 3, target: 36, deliveryMs: 1050, perfectWindow: 0.055, goodWindow: 0.16 };
+      let innings, currentInnings, target, battingTeamIndex, phase, status, progress, deliveryStarted;
+      let shotStarted, shotStartPoint, shotEndPoint, shotApex, pendingRuns, pendingWicket, quickRun, aim, lofted, batterMove, timingGrade, lastFrame = 0;
+      let width = 0, height = 0, dpr = 1;
+
+      function resetMatch() {
+        innings = [{ runs: 0, wickets: 0, balls: 0 }, { runs: 0, wickets: 0, balls: 0 }];
+        currentInnings = 0; target = config.target; battingTeamIndex = 0;
+        phase = 'ready'; status = 'Your innings. Bowl when ready.'; progress = 0;
+        deliveryStarted = 0; shotStarted = 0; pendingRuns = 0; pendingWicket = false; quickRun = false;
+        aim = 0; lofted = false; batterMove = 0; timingGrade = '';
+        $('toggleLoft').classList.remove('on'); $('toggleLoft').setAttribute('aria-pressed', 'false'); $('toggleLoft').innerHTML = 'GROUND<span class="key">SHIFT</span>';
+        $('callout').textContent = status;
+        refreshHud();
+      }
+
+      function refreshHud() {
+        const other = 1 - battingTeamIndex;
+        $('teamA').textContent = teams[battingTeamIndex].toUpperCase();
+        $('teamB').textContent = teams[other].toUpperCase();
+        const current = innings[currentInnings];
+        const first = innings[0];
+        $('scoreA').innerHTML = `${currentInnings === 0 ? current.runs : first.runs}<small> / ${currentInnings === 0 ? current.wickets : first.wickets}</small>`;
+        $('scoreB').innerHTML = `${currentInnings === 1 ? current.runs : 0}<small> / ${currentInnings === 1 ? current.wickets : 0}</small>`;
+        $('inningsLabel').textContent = phase === 'complete' ? 'RESULT' : `INNINGS ${currentInnings + 1}`;
+        $('oversStat').innerHTML = `OVERS <b>${oversText(current.balls)} / ${config.overs}</b>`;
+        const rate = current.balls === 0 ? 0 : current.runs * 6 / current.balls;
+        $('rateStat').innerHTML = `RUN RATE <b>${rate.toFixed(2)}</b>`;
+        $('targetStat').innerHTML = `TARGET <b>${currentInnings === 0 ? '—' : target}</b>`;
+        $('needStat').innerHTML = currentInnings === 0 ? `BALLS <b>${Math.max(0, config.overs * 6 - current.balls)}</b>` : `NEED <b>${Math.max(0, target - current.runs)} OFF ${Math.max(0, config.overs * 6 - current.balls)}</b>`;
+        $('callout').textContent = status;
+        $('phaseLabel').textContent = phaseLabel();
+        $('aimLabel').textContent = aim < -0.22 ? 'LEFT' : aim > 0.22 ? 'RIGHT' : 'STRAIGHT';
+        $('mainBtn').disabled = !['ready', 'break', 'complete'].includes(phase);
+        $('mainBtn').innerHTML = phase === 'break' ? 'NEXT INNINGS<span class="key">ENTER</span>' : phase === 'complete' ? 'PLAY AGAIN<span class="key">ENTER</span>' : phase === 'ready' ? 'BOWL<span class="key">ENTER</span>' : 'BALL IN PLAY';
+        $('shotBtn').disabled = phase !== 'delivery';
+      }
+
+      function phaseLabel() {
+        return phase === 'ready' ? 'READY TO BOWL' : phase === 'delivery' ? 'DELIVERY LIVE' : phase === 'shot' ? 'SHOT IN PLAY' : phase === 'break' ? 'INNINGS BREAK' : phase === 'complete' ? 'MATCH COMPLETE' : 'MATCH';
+      }
+
+      function oversText(balls) { return `${Math.floor(balls / 6)}.${balls % 6}`; }
+      function action() {
+        if (phase === 'ready') bowl();
+        else if (phase === 'break') continueMatch();
+        else if (phase === 'complete') resetMatch();
+      }
+
+      function bowl() {
+        if (phase !== 'ready') return;
+        phase = 'delivery'; progress = 0; deliveryStarted = performance.now(); pendingRuns = 0;
+        pendingWicket = false; quickRun = false; timingGrade = '';
+        $('timingTrack').classList.add('active');
+        status = 'Watch the ball — time your shot!'; refreshHud();
+      }
+
+      function tryShot() {
+        if (phase !== 'delivery') return;
+        const error = Math.abs(progress - 0.82);
+        timingGrade = error <= config.perfectWindow ? 'PERFECT' : error <= config.goodWindow ? 'GOOD' : 'POOR';
+        phase = 'shot'; shotStarted = performance.now(); shotStartPoint = ballPosition();
+        const distance = timingGrade === 'PERFECT' ? (lofted ? 48 : 38) : timingGrade === 'GOOD' ? (lofted ? 37 : 28) : 16;
+        const side = aim * distance * 0.5;
+        const forward = distance * Math.sqrt(1 - aim * aim * 0.25);
+        shotEndPoint = { x: width * 0.5 + side / 90 * width, y: height * 0.85 - forward / 90 * height };
+        shotApex = lofted ? height * 0.42 : timingGrade === 'PERFECT' ? height * 0.18 : height * 0.08;
+        const six = timingGrade === 'PERFECT' && lofted && Math.random() < 0.72;
+        const boundary = timingGrade === 'PERFECT' || timingGrade === 'GOOD' && Math.random() < (lofted ? 0.38 : 0.28);
+        if (timingGrade === 'PERFECT') pendingRuns = six ? 6 : boundary ? 4 : randInt(1, 3);
+        else if (timingGrade === 'GOOD') pendingRuns = boundary ? 4 : randInt(1, lofted ? 2 : 3);
+        else pendingRuns = Math.random() < 0.55 ? 0 : 1;
+        const wicketChance = timingGrade === 'POOR' ? 0.22 : timingGrade === 'GOOD' ? 0.045 : 0.015;
+        pendingWicket = Math.random() < wicketChance;
+        if (pendingWicket) pendingRuns = 0;
+        status = `${timingGrade} contact — ${lofted ? 'lofted' : 'ground'} shot`;
+        refreshHud();
+      }
+
+      function missDelivery() {
+        if (phase !== 'delivery') return;
+        phase = 'shot'; shotStarted = performance.now(); timingGrade = 'MISS';
+        shotStartPoint = ballPosition(); shotEndPoint = { x: width * 0.5, y: height * 0.81 }; shotApex = 0;
+        pendingRuns = 0; pendingWicket = Math.random() < 0.28; quickRun = false;
+        status = pendingWicket ? 'Bowled! The stumps are hit.' : 'Beaten by the delivery. Dot ball.';
+        $('shotBtn').disabled = true;
+        refreshHud();
+      }
+
+      function callRun() {
+        if (phase !== 'shot' || quickRun || timingGrade === 'MISS') return;
+        quickRun = true;
+        if (!pendingWicket) pendingRuns = Math.min(6, pendingRuns + 1);
+        if (Math.random() < 0.06) pendingWicket = true;
+        status = pendingWicket ? 'Run out! The throw is on target.' : 'Quick single called.';
+        refreshHud();
+      }
+
+      function resolveDelivery() {
+        $('timingTrack').classList.remove('active');
+        const score = innings[currentInnings];
+        score.runs += pendingRuns; score.balls++;
+        if (pendingWicket) score.wickets++;
+        if (pendingWicket) status = timingGrade === 'MISS' ? 'WICKET! Stumps disturbed.' : 'CAUGHT! WICKET.';
+        else if (pendingRuns === 6) status = 'SIX! Into the stands!';
+        else if (pendingRuns === 4) status = 'FOUR! Finds the boundary.';
+        else if (pendingRuns === 0) status = 'Dot ball.';
+        else status = `${pendingRuns} run${pendingRuns === 1 ? '' : 's'}.`;
+
+        if (currentInnings === 1 && score.runs >= target) {
+          phase = 'complete';
+          status = `${teams[battingTeamIndex]} win by ${config.wickets - score.wickets} wicket${config.wickets - score.wickets === 1 ? '' : 's'}!`;
+        } else if (score.wickets >= config.wickets || score.balls >= config.overs * 6) {
+          if (currentInnings === 0) {
+            target = score.runs + 1; battingTeamIndex = 1; currentInnings = 1; phase = 'break';
+            status = `Innings complete. ${teams[battingTeamIndex]} need ${target} to win.`;
+          } else {
+            phase = 'complete';
+            status = innings[0].runs === innings[1].runs ? 'Match tied!' : `${teams[0]} win by ${innings[0].runs - innings[1].runs} runs!`;
+          }
+        } else phase = 'ready';
+        refreshHud();
+      }
+
+      function continueMatch() {
+        if (phase !== 'break') return;
+        phase = 'ready'; status = 'Chase is on. Bowl when ready.'; refreshHud();
+      }
+
+      function setAim(value) { aim = Math.max(-1, Math.min(1, value)); refreshHud(); }
+      function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+      function resize() {
+        const rect = canvas.getBoundingClientRect();
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = Math.max(1, rect.width); height = Math.max(1, rect.height);
+        canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function ballPosition() {
+        const p = Math.max(0, Math.min(1, progress));
+        const x = width * 0.5 + Math.sin(p * 2.4) * width * 0.004;
+        const y = height * (0.39 + p * 0.39 - Math.sin(p * Math.PI) * 0.13);
+        return { x, y };
+      }
+
+      function draw(now) {
+        if (!width || !height) return;
+        ctx.clearRect(0, 0, width, height);
+        drawStadium(now);
+        let ball = null;
+        if (phase === 'delivery') {
+          progress = Math.min(1, (now - deliveryStarted) / config.deliveryMs);
+          ball = ballPosition();
+          $('needle').style.left = `${progress * 100}%`;
+          if (progress >= 1) { missDelivery(); }
+        } else if (phase === 'shot') {
+          const p = Math.min(1, (now - shotStarted) / 1250);
+          ball = { x: lerp(shotStartPoint.x, shotEndPoint.x, p), y: lerp(shotStartPoint.y, shotEndPoint.y, p) - Math.sin(p * Math.PI) * shotApex };
+          if (p >= 1) { ball = null; resolveDelivery(); }
+        }
+        drawPlayers(now);
+        if (ball) drawBall(ball.x, ball.y, phase === 'shot' && lofted ? 1.22 : 1);
+        requestAnimationFrame(draw);
+      }
+
+      function drawStadium(now) {
+        const sky = ctx.createLinearGradient(0, 0, 0, height);
+        sky.addColorStop(0, '#173b44'); sky.addColorStop(.38, '#315556'); sky.addColorStop(.40, '#347b4d'); sky.addColorStop(1, '#123f2a');
+        ctx.fillStyle = sky; ctx.fillRect(0, 0, width, height);
+        const cx = width * .5, cy = height * .78;
+        ctx.save();
+        ctx.beginPath(); ctx.ellipse(cx, cy, width * .51, height * .72, 0, 0, Math.PI * 2); ctx.clip();
+        const grass = ctx.createRadialGradient(cx, height * .57, height * .05, cx, cy, width * .62);
+        grass.addColorStop(0, '#53a95b'); grass.addColorStop(.55, '#247840'); grass.addColorStop(1, '#0e402b');
+        ctx.fillStyle = grass; ctx.fillRect(0, height * .28, width, height * .9);
+        for (let band = 0; band < 6; band++) {
+          const y = height * (.10 + band * .045);
+          ctx.fillStyle = band % 2 ? '#16383b' : '#1d4648';
+          ctx.fillRect(0, y, width, height * .036);
+        }
+        // Small repeated crowd lights give the bowl a lively, generic stadium feel.
+        for (let row = 0; row < 5; row++) {
+          const y = height * (.115 + row * .043);
+          for (let i = 0; i < 145; i++) {
+            const x = (i / 144) * width;
+            const wave = Math.sin(i * .13 + row * 2.1) * height * .009;
+            const palette = ['#e3bb72', '#d77d50', '#84c49b', '#e8e6d5'];
+            ctx.fillStyle = palette[(i * 7 + row * 3) % palette.length];
+            ctx.globalAlpha = .38 + .23 * Math.sin(now / 700 + i * .31 + row);
+            ctx.fillRect(x, y + wave, Math.max(1.2, width / 470), Math.max(2, height * .012));
+          }
+        }
+        ctx.globalAlpha = 1;
+        ctx.restore();
+        // Boundary oval and subtly mown outfield bands.
+        ctx.strokeStyle = '#e5d39a'; ctx.lineWidth = Math.max(1.3, width * .0023);
+        ctx.beginPath(); ctx.ellipse(cx, height * .79, width * .47, height * .64, 0, 0, Math.PI * 2); ctx.stroke();
+        ctx.strokeStyle = '#8fcb7b27'; ctx.lineWidth = 1;
+        for (let i = 1; i < 7; i++) {
+          ctx.beginPath(); ctx.ellipse(cx, height * .79, width * (.47 - i * .035), height * (.64 - i * .042), 0, 0, Math.PI * 2); ctx.stroke();
+        }
+        // Pitch perspective, crease, and wicket marks.
+        ctx.fillStyle = '#c3a074'; ctx.beginPath();
+        ctx.moveTo(width * .462, height * .39); ctx.lineTo(width * .538, height * .39);
+        ctx.lineTo(width * .60, height * .84); ctx.lineTo(width * .40, height * .84); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#d6bd91'; ctx.beginPath();
+        ctx.moveTo(width * .472, height * .40); ctx.lineTo(width * .528, height * .40); ctx.lineTo(width * .57, height * .82); ctx.lineTo(width * .43, height * .82); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#fff8e8'; ctx.lineWidth = Math.max(1.4, width * .0024);
+        for (const y of [height * .455, height * .775]) {
+          ctx.beginPath(); ctx.moveTo(width * .425, y); ctx.lineTo(width * .575, y); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(width * .447, y - height * .015); ctx.lineTo(width * .447, y + height * .015); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(width * .553, y - height * .015); ctx.lineTo(width * .553, y + height * .015); ctx.stroke();
+        }
+        // Floodlight haze.
+        for (const x of [width * .06, width * .94]) {
+          const glow = ctx.createRadialGradient(x, height * .10, 0, x, height * .10, height * .14);
+          glow.addColorStop(0, '#e8ffd05a'); glow.addColorStop(1, '#e8ffd000');
+          ctx.fillStyle = glow; ctx.fillRect(x - height * .14, 0, height * .28, height * .28);
+          ctx.fillStyle = '#efffd9'; ctx.beginPath(); ctx.arc(x, height * .085, Math.max(2, height * .006), 0, Math.PI * 2); ctx.fill();
+        }
+      }
+
+      function drawPlayers(now) {
+        const batterX = width * (.5 + batterMove * .09);
+        const batterY = height * .75;
+        const bowlerX = width * .5, bowlerY = height * .46;
+        // Simplified fictional player silhouettes with smooth shadowing.
+        drawPlayer(bowlerX, bowlerY, '#dd7148', 0.58, now);
+        drawPlayer(batterX, batterY, '#287ed2', 0.90, now);
+        // stumps at the batting end
+        ctx.strokeStyle = '#f4e8cd'; ctx.lineWidth = Math.max(1.6, width * .0028);
+        for (let i = -1; i <= 1; i++) {
+          ctx.beginPath(); ctx.moveTo(batterX + i * width * .009, batterY + height * .043); ctx.lineTo(batterX + i * width * .009, batterY + height * .069); ctx.stroke();
+        }
+        ctx.fillStyle = '#c99e61';
+        ctx.save(); ctx.translate(batterX + width * .02, batterY + height * .018); ctx.rotate(-.39);
+        ctx.fillRect(-width * .004, -height * .062, width * .009, height * .087); ctx.restore();
+      }
+
+      function drawPlayer(x, y, shirt, scale, now) {
+        const unit = Math.min(width, height) * .001;
+        ctx.save(); ctx.translate(x, y); ctx.scale(scale, scale);
+        ctx.fillStyle = '#071a16a8'; ctx.beginPath(); ctx.ellipse(0, height * .058, width * .022, height * .009, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#e4e9d9'; ctx.lineWidth = 4 * unit;
+        ctx.beginPath(); ctx.moveTo(-width * .005, height * .026); ctx.lineTo(-width * .009, height * .055); ctx.moveTo(width * .005, height * .026); ctx.lineTo(width * .011, height * .055); ctx.stroke();
+        ctx.fillStyle = shirt; roundedRect(ctx, -width * .011, -height * .002, width * .022, height * .035, 5 * unit); ctx.fill();
+        ctx.strokeStyle = shirt; ctx.lineWidth = 4 * unit;
+        const swing = phase === 'shot' && scale > .8 ? Math.sin((performance.now() - shotStarted) / 160) * .018 : 0;
+        ctx.beginPath(); ctx.moveTo(-width * .01, height * .007); ctx.lineTo(-width * .021, height * .027);
+        ctx.moveTo(width * .01, height * .007); ctx.lineTo(width * (.021 + swing), height * .025); ctx.stroke();
+        ctx.fillStyle = '#d8a477'; ctx.beginPath(); ctx.arc(0, -height * .012, height * .012, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#101b21'; ctx.beginPath(); ctx.arc(0, -height * .015, height * .013, Math.PI, Math.PI * 2); ctx.fill();
+        if (scale > .8) {
+          ctx.strokeStyle = '#ece6d5'; ctx.lineWidth = 2 * unit;
+          ctx.beginPath(); ctx.moveTo(-width * .012, height * .032); ctx.lineTo(-width * .017, height * .055); ctx.moveTo(width * .012, height * .032); ctx.lineTo(width * .016, height * .055); ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function drawBall(x, y, scale) {
+        const r = Math.max(4, Math.min(width, height) * .012 * scale);
+        ctx.fillStyle = '#091c1780'; ctx.beginPath(); ctx.ellipse(x + r * .6, y + r * 2.3, r * 1.8, r * .75, 0, 0, Math.PI * 2); ctx.fill();
+        const shine = ctx.createRadialGradient(x - r * .35, y - r * .4, r * .1, x, y, r * 1.35);
+        shine.addColorStop(0, '#ff9a8a'); shine.addColorStop(.35, '#cf3440'); shine.addColorStop(1, '#6d1020');
+        ctx.fillStyle = shine; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#ffd3c4'; ctx.lineWidth = Math.max(1, r * .13); ctx.beginPath(); ctx.arc(x, y, r * .65, -.9, 1.1); ctx.stroke();
+      }
+
+      function roundedRect(context, x, y, w, h, r) {
+        context.beginPath(); context.roundRect(x, y, w, h, r);
+      }
+      function lerp(a, b, t) { return a + (b - a) * t; }
+
+      $('mainBtn').addEventListener('click', action);
+      $('shotBtn').addEventListener('click', tryShot);
+      $('aimLeft').addEventListener('click', () => setAim(aim - .22));
+      $('aimRight').addEventListener('click', () => setAim(aim + .22));
+      $('toggleLoft').addEventListener('click', () => {
+        lofted = !lofted; $('toggleLoft').classList.toggle('on', lofted); $('toggleLoft').setAttribute('aria-pressed', String(lofted));
+        $('toggleLoft').innerHTML = `${lofted ? 'LOFTED' : 'GROUND'}<span class="key">SHIFT</span>`;
+      });
+      $('runBtn').addEventListener('click', callRun);
+      window.addEventListener('keydown', (event) => {
+        if (event.repeat) return;
+        if (event.code === 'Enter') { event.preventDefault(); action(); }
+        else if (event.code === 'Space') { event.preventDefault(); tryShot(); }
+        else if (event.code === 'ArrowLeft') { event.preventDefault(); setAim(aim - .16); }
+        else if (event.code === 'ArrowRight') { event.preventDefault(); setAim(aim + .16); }
+        else if (event.code === 'ShiftLeft' || event.code === 'ShiftRight') $('toggleLoft').click();
+        else if (event.code === 'KeyA') batterMove = Math.max(-1, batterMove - .18);
+        else if (event.code === 'KeyD') batterMove = Math.min(1, batterMove + .18);
+        else if (event.code === 'KeyR') callRun();
+      });
+
+      const observer = new ResizeObserver(resize);
+      observer.observe(canvas);
+      window.addEventListener('orientationchange', () => setTimeout(resize, 150));
+      resetMatch(); resize(); requestAnimationFrame(draw);
+      $('repoLink').href = 'https://github.com/samirlevate8788-creator/cricket-universe-game';
+    })();
+  </script>
+</body>
+</html>
