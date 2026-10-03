@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#071b20">
-  <meta name="description" content="Cricket Universe — a playable browser cricket prototype.">
-  <title>Cricket Universe — Quick Match</title>
+  <meta name="description" content="Cricket Universe — an original, accessible cricket game prototype with quick match setup and skill-based batting.">
+  <title>Cricket Universe — Play Your Moment</title>
   <style>
     :root {
       color-scheme: dark;
@@ -27,6 +27,7 @@
     }
     button { font: inherit; color: inherit; touch-action: manipulation; }
     .shell { max-width: 1240px; margin: 0 auto; padding: 22px 24px 28px; }
+    [hidden] { display: none !important; }
     .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
     .brand { display: flex; align-items: center; gap: 13px; min-width: 0; }
     .brand-mark { display: grid; place-items: center; width: 43px; height: 43px; border: 1px solid #67e3b0; border-radius: 14px; color: var(--mint); background: #0e3732; font-size: 23px; box-shadow: 0 0 28px #37c48a22; }
@@ -75,6 +76,81 @@
     .footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: #789188; font-size: 10px; margin-top: 17px; }
     .footer a { color: #9eb9ad; text-decoration: none; }
     .footer a:hover { color: var(--mint); }
+    .top-actions { display:flex; align-items:center; gap:9px; }
+    .build-tag { color:#c3d8ce; font-size:10px; font-weight:800; letter-spacing:.12em; padding:10px 13px; border:1px solid var(--line); border-radius:999px; background:#0b262a99; }
+    .small-btn { border:1px solid var(--line); background:#0b262a99; border-radius:12px; padding:10px 12px; font-size:10px; font-weight:850; letter-spacing:.1em; cursor:pointer; }
+    .small-btn:hover { border-color:#83e6b680; }
+    .home-screen { padding:8px 0 2px; }
+    .hero { position:relative; min-height:390px; overflow:hidden; display:grid; grid-template-columns:1.08fr .92fr; align-items:center; gap:20px; padding:42px clamp(24px,5vw,62px); border:1px solid #96d0ac26; border-radius:26px; background:radial-gradient(ellipse at 74% 80%, #236d48 0, transparent 38%),linear-gradient(120deg,#102f32 0%,#153f3c 52%,#102a2e 100%); box-shadow:0 28px 80px #0004; }
+    .hero::before { content:""; position:absolute; inset:auto -3% -42% 37%; height:90%; border:2px solid #e7d79a80; border-radius:50% 50% 0 0; transform:perspective(450px) rotateX(55deg); box-shadow:0 0 0 22px #69c77611,0 0 0 65px #69c7760a,0 0 0 120px #69c77608; }
+    .hero::after { content:""; position:absolute; width:42%; height:35%; right:4%; top:12%; background:radial-gradient(ellipse,#efffca44,transparent 68%); filter:blur(9px); pointer-events:none; }
+    .hero-copy,.hero-art { position:relative; z-index:1; }
+    .eyebrow { color:var(--mint); font-size:10px; font-weight:900; letter-spacing:.22em; }
+    .hero h2 { max-width:590px; margin:15px 0 12px; font-size:clamp(38px,6vw,72px); line-height:.98; letter-spacing:-.065em; }
+    .hero p { max-width:480px; margin:0; color:#bbd0c4; font-size:clamp(13px,1.5vw,16px); line-height:1.65; }
+    .hero-cta { display:flex; align-items:center; gap:15px; flex-wrap:wrap; margin-top:25px; }
+    .btn.large { min-height:58px; padding:0 22px; }
+    .free-note { color:#a9c0b3; font-size:10px; letter-spacing:.07em; }
+    .hero-art { align-self:stretch; min-height:290px; }
+    .hero-stadium { position:absolute; inset:13% 0 0 0; overflow:hidden; border-radius:48% 48% 15% 15%; background:linear-gradient(#183e44 0 32%,#20573f 33% 100%); border:1px solid #c5deb22b; box-shadow:0 18px 55px #06151499; transform:perspective(500px) rotateY(-8deg) rotateX(4deg); }
+    .hero-stadium::before { content:""; position:absolute; inset:7% -10% 48%; background:repeating-linear-gradient(180deg,#17393a 0 12px,#274a46 13px 18px); border-radius:50% 50% 0 0; }
+    .hero-stadium::after { content:""; position:absolute; width:21%; height:58%; left:39.5%; bottom:6%; background:linear-gradient(90deg,#b08c63,#dfc295 22%,#d9c194 78%,#a17d55); clip-path:polygon(35% 0,65% 0,100% 100%,0 100%); box-shadow:0 0 30px #f4d89a44; }
+    .hero-ball { position:absolute; z-index:2; width:18px; height:18px; right:34%; top:49%; border-radius:50%; background:radial-gradient(circle at 35% 30%,#ffaaa0,#d33e4b 56%,#721927); box-shadow:0 0 18px #ff716c99; animation:floatBall 2.2s ease-in-out infinite; }
+    .hero-batter { position:absolute; z-index:2; width:34px; height:65px; left:47%; bottom:8%; border-radius:16px 16px 8px 8px; background:linear-gradient(#e5b184 0 18%,#34b881 19% 65%,#e8eee2 66%); box-shadow:0 12px 18px #06151488; }
+    .hero-batter::after { content:""; position:absolute; width:8px; height:78px; right:-17px; top:13px; border-radius:5px; background:#c5a276; transform:rotate(-27deg); transform-origin:top; }
+    @keyframes floatBall { 50% { transform:translate(-22px,-14px); } }
+    .mode-section { margin-top:27px; }
+    .section-heading { display:flex; justify-content:space-between; align-items:end; gap:12px; margin:0 2px 13px; }
+    .section-heading h3 { margin:0; font-size:16px; letter-spacing:.03em; }
+    .section-heading span { color:#91aaa0; font-size:10px; }
+    .mode-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:11px; }
+    .mode-card { position:relative; min-height:122px; text-align:left; padding:15px; border:1px solid var(--line); border-radius:17px; background:linear-gradient(145deg,#103438,#0a2429); cursor:pointer; transition:transform .14s ease,border-color .14s ease,background .14s ease; }
+    .mode-card:hover { transform:translateY(-3px); border-color:#64dca88c; background:linear-gradient(145deg,#154642,#0a292c); }
+    .mode-icon { display:grid; place-items:center; width:34px; height:34px; margin-bottom:12px; border-radius:11px; background:#54e2ad19; color:#74e9b7; font-size:17px; }
+    .mode-card strong { display:block; font-size:12px; letter-spacing:.04em; }
+    .mode-card small { display:block; margin-top:4px; color:#90aaa0; font-size:9px; }
+    .mode-card .soon { position:absolute; top:11px; right:11px; color:#8ca79c; font-size:8px; font-weight:800; letter-spacing:.08em; }
+    .setup-head { display:flex; justify-content:space-between; align-items:end; gap:16px; margin:8px 0 18px; }
+    .setup-head h2 { margin:6px 0 0; font-size:clamp(28px,4vw,42px); letter-spacing:-.04em; }
+    .setup-head p { max-width:440px; margin:0; color:#9fb5aa; font-size:12px; line-height:1.6; }
+    .setup-grid { display:grid; grid-template-columns:1.08fr .92fr; gap:14px; }
+    .setup-panel { padding:18px; border:1px solid var(--line); border-radius:19px; background:linear-gradient(145deg,#103337e8,#0b2529e8); }
+    .panel-title { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:13px; }
+    .panel-title h3 { margin:0; font-size:12px; letter-spacing:.1em; }
+    .panel-title span { color:#8ea99e; font-size:9px; }
+    .team-picks { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .team-pick { min-width:0; padding:11px; border:1px solid #b3d7c51f; border-radius:14px; background:#061d20aa; }
+    .team-pick label { display:block; margin-bottom:7px; color:#9cb4a8; font-size:9px; font-weight:850; letter-spacing:.1em; }
+    .team-pick select,.setting-select { width:100%; min-height:42px; border:1px solid #b3d7c52b; border-radius:10px; padding:0 10px; color:#edf3e9; background:#0d292c; font:inherit; font-size:11px; font-weight:750; }
+    .team-preview { display:flex; align-items:center; gap:9px; margin-top:9px; }
+    .team-crest { display:grid; place-items:center; width:34px; height:34px; border-radius:10px; font-size:10px; font-weight:900; }
+    .team-preview small { display:block; color:#91a99e; font-size:8px; margin-top:2px; }
+    .format-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+    .choice { min-height:72px; border:1px solid #b3d7c522; border-radius:12px; background:#071f22; cursor:pointer; text-align:left; padding:10px; }
+    .choice strong { display:block; font-size:11px; }
+    .choice small { display:block; color:#8da79d; font-size:8px; margin-top:5px; line-height:1.35; }
+    .choice.selected { border-color:#54e2ad; box-shadow:inset 0 0 0 1px #54e2ad33; background:linear-gradient(145deg,#17453c,#0b282b); }
+    .setting-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+    .field-label { display:block; margin:0 0 7px 2px; color:#9cb4a8; font-size:9px; font-weight:850; letter-spacing:.1em; }
+    .setup-note { color:#89a198; font-size:9px; line-height:1.5; margin:13px 2px 0; }
+    .setup-footer { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:16px; }
+    .setup-footer .btn { padding:0 19px; }
+    .toss-panel { position:relative; display:grid; place-items:center; min-height:390px; overflow:hidden; padding:28px; border:1px solid var(--line); border-radius:24px; text-align:center; background:radial-gradient(ellipse at 50% 100%,#206847,#0b292d 62%); }
+    .coin { display:grid; place-items:center; width:114px; height:114px; margin:21px auto; border:5px solid #f8d481; border-radius:50%; color:#36250d; background:radial-gradient(circle at 32% 25%,#fff0bc,#dfa844 62%,#a66a1b); box-shadow:0 12px 45px #ecb64f3b,inset 0 0 0 4px #fff5c466; font-size:28px; font-weight:950; }
+    .coin.flipping { animation:coinFlip .7s ease-in-out 2; }
+    @keyframes coinFlip { 50% { transform:rotateY(900deg) scale(.7); } }
+    .coin-buttons,.toss-choice { display:flex; justify-content:center; gap:9px; flex-wrap:wrap; }
+    .toss-result { min-height:20px; margin:8px 0 13px; color:#b7ccc0; font-size:12px; }
+    .toss-choice .btn { min-width:135px; padding:0 16px; }
+    .subtle { color:#8ea69b; font-size:10px; line-height:1.5; }
+    .shot-types { display:flex; gap:7px; overflow-x:auto; padding:4px 1px 12px; scrollbar-width:thin; }
+    .shot-type { flex:0 0 auto; min-height:36px; padding:0 12px; border:1px solid #b3d7c522; border-radius:999px; background:#0a2528; color:#acc1b5; font-size:9px; font-weight:900; letter-spacing:.08em; cursor:pointer; }
+    .shot-type.selected { border-color:#54e2ad; color:#caffea; background:#16463a; }
+    .game-meta { margin-left:auto; color:#a5baaf; font-size:9px; letter-spacing:.08em; }
+    .match-actions { display:flex; align-items:center; gap:8px; }
+    .notice { position:fixed; z-index:20; left:50%; bottom:22px; transform:translate(-50%,20px); opacity:0; pointer-events:none; padding:12px 16px; border:1px solid #d1ead42c; border-radius:999px; background:#061b1df2; color:#f2f6ec; font-size:11px; font-weight:750; box-shadow:0 8px 30px #0006; transition:.2s ease; }
+    .notice.show { opacity:1; transform:translate(-50%,0); }
+    .swipe-hint { color:#86a096; font-size:9px; text-align:center; margin:0 0 9px; }
     @media (max-width: 650px) {
       .shell { padding: 14px 12px 20px; }
       .topbar { margin-bottom: 12px; }
@@ -95,12 +171,30 @@
       .btn { min-height: 51px; border-radius: 13px; font-size: 10px; }
       .btn.shot { min-height: 58px; }
       .footer { font-size: 9px; }
+      .hero { min-height:350px; grid-template-columns:1fr; padding:29px 23px; }
+      .hero-art { position:absolute; inset:27% -9% 0 35%; min-height:auto; opacity:.62; }
+      .hero-copy { max-width:75%; }
+      .hero h2 { font-size:clamp(39px,11vw,58px); }
+      .hero p { font-size:12px; }
+      .mode-grid { grid-template-columns:repeat(2,1fr); }
+      .mode-card { min-height:108px; }
+      .mode-card:last-child { grid-column:span 2; }
+      .setup-head { display:block; }
+      .setup-head p { margin-top:8px; }
+      .setup-grid { grid-template-columns:1fr; }
+      .format-grid { grid-template-columns:repeat(2,1fr); }
+      .setup-footer { align-items:stretch; }
+      .setup-footer .btn { flex:1; }
+      .game-meta { display:none; }
     }
     @media (max-width: 390px) {
       .mode-tag { letter-spacing: .07em; }
       .brand h1 { letter-spacing: .08em; }
       .score { font-size: 22px; }
       .stage { height: 250px; }
+      .hero-copy { max-width:88%; }
+      .team-picks { grid-template-columns:1fr; }
+      .toss-panel { min-height:350px; padding:20px; }
     }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; } }
   </style>
@@ -112,49 +206,134 @@
         <div class="brand-mark" aria-hidden="true">CU</div>
         <div><h1>CRICKET UNIVERSE</h1><small>PLAY YOUR MOMENT</small></div>
       </div>
-      <div class="mode-tag">QUICK MATCH <span style="color:var(--mint)">/</span> 2 OVERS</div>
+      <div class="top-actions">
+        <span class="build-tag" id="topTag">PLAYABLE PROTOTYPE</span>
+        <button id="backHome" class="small-btn" hidden>← MENU</button>
+        <button id="restartMatch" class="small-btn" hidden>↻ RESTART</button>
+      </div>
     </header>
 
-    <section class="matchbar" aria-label="Match score">
-      <div class="team"><span id="teamA" class="team-name">HARBOR HAWKS</span><span id="scoreA" class="score">0<small> / 0</small></span></div>
-      <div class="vs"><strong id="inningsLabel">INNINGS 1</strong>VS</div>
-      <div class="team right"><span id="teamB" class="team-name">SUMMIT STRIKERS</span><span id="scoreB" class="score">0<small> / 0</small></span></div>
-    </section>
-    <div class="stats" aria-live="polite">
-      <span class="stat" id="oversStat">OVERS <b>0.0 / 2</b></span><i class="sep"></i>
-      <span class="stat" id="rateStat">RUN RATE <b>0.00</b></span><i class="sep"></i>
-      <span class="stat" id="targetStat">TARGET <b>36</b></span><i class="sep"></i>
-      <span class="stat" id="needStat">NEED <b>36 OFF 12</b></span>
-    </div>
-
-    <section class="stage" aria-label="Cricket match view">
-      <canvas id="stadium" aria-label="Animated fictional cricket stadium"></canvas>
-      <div class="stage-top">
-        <span class="phase-chip"><i class="live-dot"></i><span id="phaseLabel">READY TO BOWL</span></span>
-        <span class="aim-chip">SHOT AIM&nbsp; <b id="aimLabel">STRAIGHT</b></span>
+    <section id="homeScreen" class="home-screen">
+      <div class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">CRICKET, YOUR WAY · SEASON ZERO</span>
+          <h2>Own the<br>moment.</h2>
+          <p>Pick your side, read the ball, and find the gap. A quick, skill-first cricket match built for touch, keyboard and controller.</p>
+          <div class="hero-cta">
+            <button id="quickPlay" class="btn primary large">▶ &nbsp; QUICK PLAY</button>
+            <span class="free-note">FREE TO PLAY · NO PAY-TO-WIN</span>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true"><div class="hero-stadium"><i class="hero-ball"></i><i class="hero-batter"></i></div></div>
       </div>
-      <div class="callout"><span id="callout" aria-live="assertive">Your innings. Bowl when ready.</span></div>
+      <section class="mode-section" aria-label="Game modes">
+        <div class="section-heading"><h3>STEP ONTO THE PITCH</h3><span>Choose how you want to play</span></div>
+        <div class="mode-grid">
+          <button class="mode-card" data-mode="quick"><span class="mode-icon">🏏</span><strong>QUICK PLAY</strong><small>Set up a match and take the crease</small></button>
+          <button class="mode-card" data-mode="practice"><span class="mode-icon">🎯</span><strong>PRACTICE</strong><small>Work on shot timing and placement</small></button>
+          <button class="mode-card" data-mode="tournament"><span class="mode-icon">🏆</span><strong>TOURNAMENT</strong><small>Build your run to the final</small><span class="soon">ROADMAP</span></button>
+          <button class="mode-card" data-mode="career"><span class="mode-icon">👑</span><strong>CAREER</strong><small>Create a player and climb the ranks</small><span class="soon">ROADMAP</span></button>
+          <button class="mode-card" data-mode="world"><span class="mode-icon">🌍</span><strong>WORLD CRICKET</strong><small>Explore teams, tours and formats</small><span class="soon">ROADMAP</span></button>
+        </div>
+      </section>
+      <footer class="footer"><span>Original fictional teams and stadiums · Prototype build</span><a href="https://github.com/samirlevate8788-creator/cricket-universe-game" id="repoLink" target="_blank" rel="noreferrer">SOURCE REPOSITORY ↗</a></footer>
     </section>
 
-    <section class="timing" aria-label="Shot timing guide">
-      <div class="timing-head"><span>SHOT TIMING</span><span>HIT IN THE MINT ZONE</span></div>
-      <div id="timingTrack" class="track"><div class="sweetspot"></div><div id="needle" class="needle"></div></div>
-    </section>
-
-    <section class="controls" aria-label="Match controls">
-      <div class="left-controls">
-        <button class="btn" id="aimLeft" aria-label="Aim left">AIM LEFT<span class="key">←</span></button>
-        <button class="btn" id="toggleLoft" aria-pressed="false">GROUND<span class="key">SHIFT</span></button>
-        <button class="btn" id="aimRight" aria-label="Aim right">AIM RIGHT<span class="key">→</span></button>
+    <section id="setupScreen" hidden>
+      <div class="setup-head"><div><span class="eyebrow">QUICK PLAY · MATCH SETUP</span><h2>Make it your match.</h2></div><p>Choose your teams and conditions. This prototype uses short exhibition lengths so you can get into a match quickly.</p></div>
+      <div class="setup-grid">
+        <section class="setup-panel">
+          <div class="panel-title"><h3>01 · PICK YOUR SIDES</h3><span>FICTIONAL TEAMS</span></div>
+          <div class="team-picks">
+            <div class="team-pick"><label for="teamSelectA">YOUR TEAM</label><select id="teamSelectA"></select><div id="teamPreviewA" class="team-preview"></div></div>
+            <div class="team-pick"><label for="teamSelectB">OPPOSITION</label><select id="teamSelectB"></select><div id="teamPreviewB" class="team-preview"></div></div>
+          </div>
+          <div class="panel-title" style="margin-top:19px"><h3>02 · CHOOSE A FORMAT</h3><span>PROTOTYPE LENGTH</span></div>
+          <div class="format-grid" id="formatGrid">
+            <button class="choice selected" data-format="quick"><strong>QUICK</strong><small>2 overs · fast match</small></button>
+            <button class="choice" data-format="t20"><strong>T20</strong><small>4 overs · arcade demo</small></button>
+            <button class="choice" data-format="odi"><strong>ODI</strong><small>6 overs · arcade demo</small></button>
+            <button class="choice" data-format="test"><strong>TEST</strong><small>3 overs · short demo</small></button>
+          </div>
+          <p class="setup-note">The selected format is played at a prototype length with simplified rules. Full-length ODI/Test rules, DRS and multiplayer are on the roadmap.</p>
+        </section>
+        <section class="setup-panel">
+          <div class="panel-title"><h3>03 · SET THE SCENE</h3><span>ALL ORIGINAL VENUES</span></div>
+          <label class="field-label" for="stadiumSelect">STADIUM</label><select class="setting-select" id="stadiumSelect"><option value="harbor">Harborlight Arena</option><option value="highland">Highland Park</option><option value="city">City Lights Ground</option></select>
+          <div class="setting-row">
+            <div><label class="field-label" for="weatherSelect">WEATHER</label><select class="setting-select" id="weatherSelect"><option value="sunny">Sunny</option><option value="cloudy">Cloudy</option><option value="dew">Evening dew</option></select></div>
+            <div><label class="field-label" for="pitchSelect">PITCH</label><select class="setting-select" id="pitchSelect"><option value="flat">Flat</option><option value="green">Green seam</option><option value="dry">Dry turn</option><option value="bouncy">Hard & bouncy</option></select></div>
+          </div>
+          <div class="setting-row">
+            <div><label class="field-label" for="difficultySelect">DIFFICULTY</label><select class="setting-select" id="difficultySelect"><option value="casual">Casual</option><option value="standard" selected>Standard</option><option value="pro">Pro</option></select></div>
+            <div><label class="field-label" for="oversSelect">OVERS / INNINGS</label><select class="setting-select" id="oversSelect"><option value="2">2 overs</option><option value="3">3 overs</option><option value="4">4 overs</option><option value="6">6 overs</option></select></div>
+          </div>
+          <p id="setupSummary" class="setup-note">Quick match · 2 overs per innings · 3 wickets per innings.</p>
+        </section>
       </div>
-      <div class="right-controls">
-        <button class="btn" id="runBtn">RUN<span class="key">CALL A SINGLE</span></button>
-        <button class="btn primary shot" id="shotBtn" disabled>SHOT<span class="key">SPACE</span></button>
-        <button class="btn primary" id="mainBtn">BOWL<span class="key">ENTER</span></button>
-      </div>
+      <div class="setup-footer"><button id="setupBack" class="small-btn">← MAIN MENU</button><button id="toToss" class="btn primary">CONTINUE TO TOSS &nbsp; →</button></div>
+      <footer class="footer"><span>Skill-first cricket · No licensed player likenesses</span><a href="https://github.com/samirlevate8788-creator/cricket-universe-game" target="_blank" rel="noreferrer">SOURCE ↗</a></footer>
     </section>
 
-    <footer class="footer"><span>Fictional teams. Built for the browser.</span><a href="https://github.com/" id="repoLink" target="_blank" rel="noreferrer">SOURCE REPOSITORY ↗</a></footer>
+    <section id="tossScreen" hidden>
+      <div class="setup-head"><div><span class="eyebrow">MATCH DAY · PRE-MATCH</span><h2>Call the toss.</h2></div><p id="tossIntro">The captains walk out. Choose heads or tails and see who gets the first call.</p></div>
+      <div class="toss-panel">
+        <div><span class="eyebrow" id="tossMatchup">HARBOR HAWKS VS SUMMIT STRIKERS</span><div id="coin" class="coin" aria-label="Toss coin">CU</div><p id="tossResult" class="toss-result" aria-live="polite">Pick a side for the toss.</p>
+          <div id="coinButtons" class="coin-buttons"><button class="btn" data-call="Heads">HEADS</button><button class="btn" data-call="Tails">TAILS</button></div>
+          <div id="tossChoice" class="toss-choice" hidden><button class="btn primary" data-decision="bat">BAT FIRST</button><button class="btn" data-decision="bowl">BOWL FIRST</button></div>
+          <div id="aiTossContinue" hidden><button id="startAfterToss" class="btn primary">START MATCH →</button></div>
+          <p class="subtle" style="margin-top:16px">Quick Play uses fictional captains and an animated coin toss.</p>
+        </div>
+      </div>
+      <div class="setup-footer"><button id="tossBack" class="small-btn">← MATCH SETUP</button><span class="subtle">ONE MATCH · YOUR RULES</span></div>
+    </section>
+
+    <section id="gameScreen" hidden>
+      <div class="match-actions" style="margin:0 0 10px"><span class="mode-tag" id="matchModeTag">QUICK MATCH / 2 OVERS</span><span class="game-meta" id="matchConditions">HARBORLIGHT ARENA · SUNNY</span></div>
+      <section class="matchbar" aria-label="Match score">
+        <div class="team"><span id="teamA" class="team-name">HARBOR HAWKS</span><span id="scoreA" class="score">0<small> / 0</small></span></div>
+        <div class="vs"><strong id="inningsLabel">INNINGS 1</strong>VS</div>
+        <div class="team right"><span id="teamB" class="team-name">SUMMIT STRIKERS</span><span id="scoreB" class="score">0<small> / 0</small></span></div>
+      </section>
+      <div class="stats" aria-live="polite">
+        <span class="stat" id="oversStat">OVERS <b>0.0 / 2</b></span><i class="sep"></i>
+        <span class="stat" id="rateStat">RUN RATE <b>0.00</b></span><i class="sep"></i>
+        <span class="stat" id="targetStat">TARGET <b>—</b></span><i class="sep"></i>
+        <span class="stat" id="needStat">BALLS <b>12</b></span>
+      </div>
+      <section class="stage" aria-label="Cricket match view">
+        <canvas id="stadium" aria-label="Animated fictional cricket stadium. Swipe during a delivery to aim and play a shot."></canvas>
+        <div class="stage-top">
+          <span class="phase-chip"><i class="live-dot"></i><span id="phaseLabel">READY TO BOWL</span></span>
+          <span class="aim-chip"><span id="deliveryLabel">GOOD LENGTH</span>&nbsp; · &nbsp;AIM <b id="aimLabel">STRAIGHT</b></span>
+        </div>
+        <div class="callout"><span id="callout" aria-live="assertive">Your innings. Bowl when ready.</span></div>
+      </section>
+      <section class="timing" aria-label="Shot timing guide">
+        <div class="timing-head"><span>SHOT TIMING</span><span>HIT IN THE MINT ZONE</span></div>
+        <div id="timingTrack" class="track"><div class="sweetspot"></div><div id="needle" class="needle"></div></div>
+      </section>
+      <div class="panel-title"><h3>CHOOSE YOUR SHOT</h3><span>TYPE + TIMING + PLACEMENT</span></div>
+      <div class="shot-types" aria-label="Shot types">
+        <button class="shot-type selected" data-shot="drive">DRIVE</button><button class="shot-type" data-shot="cut">CUT</button><button class="shot-type" data-shot="pull">PULL</button><button class="shot-type" data-shot="sweep">SWEEP</button><button class="shot-type" data-shot="defend">DEFEND</button>
+      </div>
+      <p class="swipe-hint">Touch: swipe across the pitch to aim and time your shot · Keyboard: ← / → aim, Space shot</p>
+      <section class="controls" aria-label="Match controls">
+        <div class="left-controls">
+          <button class="btn" id="aimLeft" aria-label="Aim left">AIM LEFT<span class="key">←</span></button>
+          <button class="btn loft" id="toggleLoft" aria-pressed="false">GROUND<span class="key">SHIFT</span></button>
+          <button class="btn" id="aimRight" aria-label="Aim right">AIM RIGHT<span class="key">→</span></button>
+        </div>
+        <div class="right-controls">
+          <button class="btn" id="runBtn">RUN<span class="key">CALL A SINGLE</span></button>
+          <button class="btn primary shot" id="shotBtn" disabled>SHOT<span class="key">SPACE</span></button>
+          <button class="btn primary" id="mainBtn">BOWL<span class="key">ENTER</span></button>
+        </div>
+      </section>
+    </section>
+
+    <div id="notice" class="notice" role="status" aria-live="polite"></div>
+    <footer id="gameFooter" class="footer" hidden><span>Original fictional cricket prototype · Full-length formats are roadmap features</span><a href="https://github.com/samirlevate8788-creator/cricket-universe-game" target="_blank" rel="noreferrer">SOURCE ↗</a></footer>
   </main>
 
   <script>
@@ -163,31 +342,149 @@
       const $ = (id) => document.getElementById(id);
       const canvas = $('stadium');
       const ctx = canvas.getContext('2d');
-      const teams = ['Harbor Hawks', 'Summit Strikers'];
-      const config = { overs: 2, wickets: 3, target: 36, deliveryMs: 1050, perfectWindow: 0.055, goodWindow: 0.16 };
-      let innings, currentInnings, target, battingTeamIndex, phase, status, progress, deliveryStarted;
-      let shotStarted, shotStartPoint, shotEndPoint, shotApex, pendingRuns, pendingWicket, quickRun, aim, lofted, batterMove, timingGrade, lastFrame = 0;
-      let width = 0, height = 0, dpr = 1;
+      const teamCatalog = [
+        { id:'harbor', name:'Harbor Hawks', short:'HH', color:'#34b881', accent:'#b7f0d0', strength:'Balanced' },
+        { id:'summit', name:'Summit Strikers', short:'SS', color:'#287ed2', accent:'#c5e1ff', strength:'Power batting' },
+        { id:'desert', name:'Desert Foxes', short:'DF', color:'#dc7c42', accent:'#ffd1a1', strength:'Fast bowling' },
+        { id:'monsoon', name:'Monsoon Royals', short:'MR', color:'#8657cc', accent:'#ddc9ff', strength:'Spin attack' },
+        { id:'forest', name:'Forest Rangers', short:'FR', color:'#6fa64d', accent:'#d9f0b7', strength:'Sharp fielding' },
+        { id:'aurora', name:'Aurora Comets', short:'AC', color:'#d34d77', accent:'#ffc5d8', strength:'All-rounders' }
+      ];
+      const formatPresets = { quick:{label:'QUICK MATCH',overs:2}, t20:{label:'T20 EXHIBITION',overs:4}, odi:{label:'ODI EXHIBITION',overs:6}, test:{label:'TEST EXHIBITION',overs:3} };
+      const venueData = {
+        harbor:{ name:'Harborlight Arena', sky:'#173b44', stand:'#173d40', grass:'#247840', pitch:'#c3a074' },
+        highland:{ name:'Highland Park', sky:'#304b59', stand:'#243b47', grass:'#36724e', pitch:'#ba956c' },
+        city:{ name:'City Lights Ground', sky:'#172f51', stand:'#202b4a', grass:'#1c694c', pitch:'#c4a67b' }
+      };
+      const deliveries = [
+        { label:'GOOD LENGTH', speed:1, swing:.4 }, { label:'LATE SWING', speed:.95, swing:1.5 },
+        { label:'YORKER', speed:1.14, swing:.15 }, { label:'SHORT BALL', speed:.9, swing:.2 },
+        { label:'SPIN DELIVERY', speed:1.05, swing:1.1 }
+      ];
+      let teams = [teamCatalog[0], teamCatalog[1]];
+      const config = { overs: 2, wickets: 3, target: null, deliveryMs: 1050, perfectWindow: 0.055, goodWindow: 0.16 };
+      let innings, teamScores, teamWickets, currentInnings, target, battingTeamIndex, startingBattingTeamIndex = 0, tossWinnerIndex, userTossWon, phase, status, progress, deliveryStarted;
+      let shotStarted, shotStartPoint, shotEndPoint, shotApex, pendingRuns, pendingWicket, quickRun, aim, lofted, batterMove, timingGrade, shotType = 'drive', deliveryType, lastFrame = 0;
+      let settings = { format:'quick', stadium:'harbor', weather:'sunny', pitch:'flat', difficulty:'standard' };
+      let toastTimer = 0, touchStart = null, gamepadPrevious = [];
+      let width = 0, height = 0, dpr = 1, frameHandle = 0;
+
+      function showScreen(name) {
+        ['homeScreen','setupScreen','tossScreen','gameScreen'].forEach((id) => $(id).hidden = id !== name);
+        $('backHome').hidden = name === 'homeScreen';
+        $('restartMatch').hidden = name !== 'gameScreen';
+        $('gameFooter').hidden = name !== 'gameScreen';
+        $('topTag').hidden = name === 'gameScreen';
+        if (name === 'gameScreen') requestAnimationFrame(() => { resize(); if (!frameHandle) frameHandle = requestAnimationFrame(draw); });
+      }
+
+      function notify(message) {
+        $('notice').textContent = message;
+        $('notice').classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => $('notice').classList.remove('show'), 2400);
+      }
+
+      function buildTeamSelectors() {
+        const options = teamCatalog.map((team) => `<option value="${team.id}">${team.name}</option>`).join('');
+        $('teamSelectA').innerHTML = options; $('teamSelectB').innerHTML = options;
+        $('teamSelectA').value = teams[0].id; $('teamSelectB').value = teams[1].id;
+        updateTeamPreviews();
+      }
+
+      function updateTeamPreviews() {
+        const a = teamCatalog.find((team) => team.id === $('teamSelectA').value) || teamCatalog[0];
+        const b = teamCatalog.find((team) => team.id === $('teamSelectB').value) || teamCatalog[1];
+        if (a.id === b.id) {
+          $('teamSelectB').value = teamCatalog.find((team) => team.id !== a.id).id;
+          return updateTeamPreviews();
+        }
+        $('teamPreviewA').innerHTML = `<span class="team-crest" style="color:${a.accent};background:${a.color}">${a.short}</span><span><b>${a.name}</b><small>${a.strength}</small></span>`;
+        $('teamPreviewB').innerHTML = `<span class="team-crest" style="color:${b.accent};background:${b.color}">${b.short}</span><span><b>${b.name}</b><small>${b.strength}</small></span>`;
+        teams = [a,b];
+        $('tossMatchup').textContent = `${a.name.toUpperCase()} VS ${b.name.toUpperCase()}`;
+      }
+
+      function updateSetupSummary() {
+        const format = formatPresets[settings.format];
+        const overs = Number($('oversSelect').value);
+        const stadium = venueData[$('stadiumSelect').value];
+        settings.overs = overs;
+        settings.stadium = $('stadiumSelect').value;
+        settings.weather = $('weatherSelect').value;
+        settings.pitch = $('pitchSelect').value;
+        settings.difficulty = $('difficultySelect').value;
+        $('setupSummary').textContent = `${format.label} · ${overs} overs per innings · 3 wickets per innings · ${stadium.name}.`;
+        $('matchModeTag').textContent = `${format.label} / ${overs} OVERS`;
+        $('matchConditions').textContent = `${stadium.name.toUpperCase()} · ${settings.weather.toUpperCase()} · ${settings.pitch.toUpperCase()} PITCH`;
+      }
+
+      function openSetup() {
+        buildTeamSelectors();
+        settings.format = 'quick';
+        document.querySelectorAll('[data-format]').forEach((button) => button.classList.toggle('selected', button.dataset.format === 'quick'));
+        $('oversSelect').value = String(formatPresets.quick.overs);
+        updateSetupSummary(); showScreen('setupScreen');
+      }
+
+      function openToss() {
+        updateTeamPreviews(); updateSetupSummary();
+        $('coin').textContent = 'CU'; $('coin').classList.remove('flipping');
+        $('tossResult').textContent = 'Pick a side for the toss.';
+        $('coinButtons').hidden = false; $('tossChoice').hidden = true; $('aiTossContinue').hidden = true;
+        showScreen('tossScreen');
+      }
+
+      function flipToss(call) {
+        $('coinButtons').hidden = true;
+        $('coin').classList.remove('flipping'); void $('coin').offsetWidth; $('coin').classList.add('flipping');
+        $('tossResult').textContent = 'The coin is in the air…';
+        const result = Math.random() < .5 ? 'Heads' : 'Tails';
+        tossWinnerIndex = result === call ? 0 : 1;
+        userTossWon = tossWinnerIndex === 0;
+        setTimeout(() => {
+          $('coin').textContent = result === 'Heads' ? 'H' : 'T';
+          if (userTossWon) {
+            $('tossResult').textContent = `${teams[0].name} win the toss! Choose your call.`;
+            $('tossChoice').hidden = false;
+          } else {
+            const aiBats = settings.pitch === 'flat' || settings.weather === 'sunny';
+            window.aiTossDecision = aiBats ? 'bat' : 'bowl';
+            $('tossResult').textContent = `${teams[1].name} win the toss and choose to ${window.aiTossDecision} first.`;
+            $('aiTossContinue').hidden = false;
+          }
+        }, 1250);
+      }
+
+      function launchMatch(decision) {
+        battingTeamIndex = tossWinnerIndex === 0 ? (decision === 'bat' ? 0 : 1) : (window.aiTossDecision === 'bat' ? 1 : 0);
+        startingBattingTeamIndex = battingTeamIndex;
+        resetMatch(); showScreen('gameScreen');
+      }
 
       function resetMatch() {
         innings = [{ runs: 0, wickets: 0, balls: 0 }, { runs: 0, wickets: 0, balls: 0 }];
-        currentInnings = 0; target = config.target; battingTeamIndex = 0;
+        teamScores = [0,0]; teamWickets = [0,0]; currentInnings = 0; target = null;
+        battingTeamIndex = startingBattingTeamIndex;
+        config.overs = Number($('oversSelect').value || settings.overs || 2);
+        config.deliveryMs = settings.difficulty === 'casual' ? 1275 : settings.difficulty === 'pro' ? 875 : 1050;
+        config.perfectWindow = settings.difficulty === 'casual' ? .075 : settings.difficulty === 'pro' ? .042 : .055;
+        config.goodWindow = settings.difficulty === 'casual' ? .2 : settings.difficulty === 'pro' ? .13 : .16;
         phase = 'ready'; status = 'Your innings. Bowl when ready.'; progress = 0;
         deliveryStarted = 0; shotStarted = 0; pendingRuns = 0; pendingWicket = false; quickRun = false;
-        aim = 0; lofted = false; batterMove = 0; timingGrade = '';
+        aim = 0; lofted = false; batterMove = 0; timingGrade = ''; shotType = 'drive';
         $('toggleLoft').classList.remove('on'); $('toggleLoft').setAttribute('aria-pressed', 'false'); $('toggleLoft').innerHTML = 'GROUND<span class="key">SHIFT</span>';
+        document.querySelectorAll('[data-shot]').forEach((button) => button.classList.toggle('selected', button.dataset.shot === 'drive'));
         $('callout').textContent = status;
-        refreshHud();
+        updateSetupSummary(); refreshHud();
       }
 
       function refreshHud() {
-        const other = 1 - battingTeamIndex;
-        $('teamA').textContent = teams[battingTeamIndex].toUpperCase();
-        $('teamB').textContent = teams[other].toUpperCase();
+        $('teamA').textContent = teams[0].name.toUpperCase();
+        $('teamB').textContent = teams[1].name.toUpperCase();
         const current = innings[currentInnings];
-        const first = innings[0];
-        $('scoreA').innerHTML = `${currentInnings === 0 ? current.runs : first.runs}<small> / ${currentInnings === 0 ? current.wickets : first.wickets}</small>`;
-        $('scoreB').innerHTML = `${currentInnings === 1 ? current.runs : 0}<small> / ${currentInnings === 1 ? current.wickets : 0}</small>`;
+        $('scoreA').innerHTML = `${teamScores[0]}<small> / ${teamWickets[0]}</small>`;
+        $('scoreB').innerHTML = `${teamScores[1]}<small> / ${teamWickets[1]}</small>`;
         $('inningsLabel').textContent = phase === 'complete' ? 'RESULT' : `INNINGS ${currentInnings + 1}`;
         $('oversStat').innerHTML = `OVERS <b>${oversText(current.balls)} / ${config.overs}</b>`;
         const rate = current.balls === 0 ? 0 : current.runs * 6 / current.balls;
@@ -215,31 +512,55 @@
 
       function bowl() {
         if (phase !== 'ready') return;
+        const preferredType = { green:'LATE SWING', dry:'SPIN DELIVERY', bouncy:'SHORT BALL' }[settings.pitch];
+        const preferred = deliveries.find((item) => item.label === preferredType);
+        const pool = settings.pitch === 'dry' ? deliveries.filter((item) => item.label !== 'LATE SWING') : deliveries;
+        const chosenType = preferred && Math.random() < .42 ? preferred : pool[randInt(0, pool.length - 1)];
+        const weatherSwing = settings.weather === 'cloudy' ? 1.4 : settings.weather === 'dew' ? .82 : .92;
+        deliveryType = { ...chosenType, swing: chosenType.swing * weatherSwing };
+        $('deliveryLabel').textContent = deliveryType.label;
+        const weatherSpeed = settings.weather === 'dew' ? .94 : settings.weather === 'cloudy' ? 1.03 : 1;
+        config.deliveryMs = (settings.difficulty === 'casual' ? 1275 : settings.difficulty === 'pro' ? 875 : 1050) * deliveryType.speed * weatherSpeed;
+        const contactPoint = deliveryType.label === 'YORKER' ? .88 : deliveryType.label === 'SHORT BALL' ? .76 : .82;
+        const sweetspot = $('timingTrack').querySelector('.sweetspot');
+        sweetspot.style.left = `${(contactPoint - config.perfectWindow) * 100}%`;
+        sweetspot.style.width = `${config.perfectWindow * 200}%`;
         phase = 'delivery'; progress = 0; deliveryStarted = performance.now(); pendingRuns = 0;
         pendingWicket = false; quickRun = false; timingGrade = '';
         $('timingTrack').classList.add('active');
-        status = 'Watch the ball — time your shot!'; refreshHud();
+        status = `${deliveryType.label.toLowerCase()} — read it and time your shot.`; refreshHud();
       }
 
       function tryShot() {
         if (phase !== 'delivery') return;
-        const error = Math.abs(progress - 0.82);
+        const error = Math.abs(progress - (deliveryType.label === 'YORKER' ? .88 : deliveryType.label === 'SHORT BALL' ? .76 : .82));
         timingGrade = error <= config.perfectWindow ? 'PERFECT' : error <= config.goodWindow ? 'GOOD' : 'POOR';
         phase = 'shot'; shotStarted = performance.now(); shotStartPoint = ballPosition();
-        const distance = timingGrade === 'PERFECT' ? (lofted ? 48 : 38) : timingGrade === 'GOOD' ? (lofted ? 37 : 28) : 16;
-        const side = aim * distance * 0.5;
-        const forward = distance * Math.sqrt(1 - aim * aim * 0.25);
+        const styles = {
+          drive:{power:1,side:0,risk:1}, cut:{power:.9,side:-.28,risk:1.08}, pull:{power:1.08,side:.18,risk:1.25},
+          sweep:{power:.78,side:-.18,risk:1.1}, defend:{power:.35,side:0,risk:.28}
+        };
+        const style = styles[shotType] || styles.drive;
+        const baseDistance = timingGrade === 'PERFECT' ? (lofted ? 48 : 38) : timingGrade === 'GOOD' ? (lofted ? 37 : 28) : 16;
+        const distance = baseDistance * style.power * (settings.pitch === 'flat' ? 1.08 : settings.pitch === 'slow' ? .84 : 1);
+        const effectiveAim = Math.max(-1, Math.min(1, aim + style.side));
+        const side = effectiveAim * distance * 0.5;
+        const forward = distance * Math.sqrt(1 - effectiveAim * effectiveAim * 0.25);
         shotEndPoint = { x: width * 0.5 + side / 90 * width, y: height * 0.85 - forward / 90 * height };
-        shotApex = lofted ? height * 0.42 : timingGrade === 'PERFECT' ? height * 0.18 : height * 0.08;
-        const six = timingGrade === 'PERFECT' && lofted && Math.random() < 0.72;
-        const boundary = timingGrade === 'PERFECT' || timingGrade === 'GOOD' && Math.random() < (lofted ? 0.38 : 0.28);
+        shotApex = lofted && shotType !== 'defend' ? height * 0.42 : timingGrade === 'PERFECT' ? height * 0.18 : height * 0.08;
+        const six = shotType !== 'defend' && timingGrade === 'PERFECT' && lofted && Math.random() < (settings.pitch === 'flat' ? .82 : .65);
+        const boundary = shotType !== 'defend' && (timingGrade === 'PERFECT' || timingGrade === 'GOOD' && Math.random() < (lofted ? 0.38 : 0.28));
         if (timingGrade === 'PERFECT') pendingRuns = six ? 6 : boundary ? 4 : randInt(1, 3);
         else if (timingGrade === 'GOOD') pendingRuns = boundary ? 4 : randInt(1, lofted ? 2 : 3);
         else pendingRuns = Math.random() < 0.55 ? 0 : 1;
-        const wicketChance = timingGrade === 'POOR' ? 0.22 : timingGrade === 'GOOD' ? 0.045 : 0.015;
+        if (shotType === 'defend' && timingGrade !== 'POOR') pendingRuns = Math.random() < .12 ? 1 : 0;
+        const pitchRisk = settings.pitch === 'green' ? .07 : settings.pitch === 'dry' && deliveryType.label === 'SPIN DELIVERY' ? .06 : 0;
+        const weatherRisk = settings.weather === 'cloudy' && deliveryType.label === 'LATE SWING' ? .025 : 0;
+        const difficultyRisk = settings.difficulty === 'pro' ? .07 : settings.difficulty === 'casual' ? -.05 : 0;
+        const wicketChance = Math.max(.005, (timingGrade === 'POOR' ? 0.22 : timingGrade === 'GOOD' ? 0.045 : 0.015) * style.risk + pitchRisk + weatherRisk + difficultyRisk);
         pendingWicket = Math.random() < wicketChance;
         if (pendingWicket) pendingRuns = 0;
-        status = `${timingGrade} contact — ${lofted ? 'lofted' : 'ground'} shot`;
+        status = `${timingGrade} ${shotType.toUpperCase()} — ${lofted ? 'lofted' : 'ground'} contact`;
         refreshHud();
       }
 
@@ -247,7 +568,7 @@
         if (phase !== 'delivery') return;
         phase = 'shot'; shotStarted = performance.now(); timingGrade = 'MISS';
         shotStartPoint = ballPosition(); shotEndPoint = { x: width * 0.5, y: height * 0.81 }; shotApex = 0;
-        pendingRuns = 0; pendingWicket = Math.random() < 0.28; quickRun = false;
+        pendingRuns = 0; pendingWicket = Math.random() < (settings.difficulty === 'pro' ? .34 : .28); quickRun = false;
         status = pendingWicket ? 'Bowled! The stumps are hit.' : 'Beaten by the delivery. Dot ball.';
         $('shotBtn').disabled = true;
         refreshHud();
@@ -256,8 +577,8 @@
       function callRun() {
         if (phase !== 'shot' || quickRun || timingGrade === 'MISS') return;
         quickRun = true;
-        if (!pendingWicket) pendingRuns = Math.min(6, pendingRuns + 1);
-        if (Math.random() < 0.06) pendingWicket = true;
+        if (!pendingWicket && pendingRuns < 4) pendingRuns = Math.min(3, pendingRuns + 1);
+        if (Math.random() < (settings.difficulty === 'pro' ? .1 : .06)) pendingWicket = true;
         status = pendingWicket ? 'Run out! The throw is on target.' : 'Quick single called.';
         refreshHud();
       }
@@ -267,6 +588,8 @@
         const score = innings[currentInnings];
         score.runs += pendingRuns; score.balls++;
         if (pendingWicket) score.wickets++;
+        teamScores[battingTeamIndex] += pendingRuns;
+        if (pendingWicket) teamWickets[battingTeamIndex]++;
         if (pendingWicket) status = timingGrade === 'MISS' ? 'WICKET! Stumps disturbed.' : 'CAUGHT! WICKET.';
         else if (pendingRuns === 6) status = 'SIX! Into the stands!';
         else if (pendingRuns === 4) status = 'FOUR! Finds the boundary.';
@@ -275,14 +598,14 @@
 
         if (currentInnings === 1 && score.runs >= target) {
           phase = 'complete';
-          status = `${teams[battingTeamIndex]} win by ${config.wickets - score.wickets} wicket${config.wickets - score.wickets === 1 ? '' : 's'}!`;
+          status = `${teams[battingTeamIndex].name} win by ${config.wickets - score.wickets} wicket${config.wickets - score.wickets === 1 ? '' : 's'}!`;
         } else if (score.wickets >= config.wickets || score.balls >= config.overs * 6) {
           if (currentInnings === 0) {
-            target = score.runs + 1; battingTeamIndex = 1; currentInnings = 1; phase = 'break';
-            status = `Innings complete. ${teams[battingTeamIndex]} need ${target} to win.`;
+            target = score.runs + 1; battingTeamIndex = 1 - battingTeamIndex; currentInnings = 1; phase = 'break';
+            status = `Innings complete. ${teams[battingTeamIndex].name} need ${target} to win.`;
           } else {
             phase = 'complete';
-            status = innings[0].runs === innings[1].runs ? 'Match tied!' : `${teams[0]} win by ${innings[0].runs - innings[1].runs} runs!`;
+            status = innings[0].runs === innings[1].runs ? 'Match tied!' : `${teams[1 - battingTeamIndex].name} win by ${Math.abs(innings[0].runs - innings[1].runs)} runs!`;
           }
         } else phase = 'ready';
         refreshHud();
@@ -294,6 +617,12 @@
       }
 
       function setAim(value) { aim = Math.max(-1, Math.min(1, value)); refreshHud(); }
+      function chooseShot(type) {
+        if (!['drive','cut','pull','sweep','defend'].includes(type)) return;
+        shotType = type;
+        document.querySelectorAll('[data-shot]').forEach((button) => button.classList.toggle('selected', button.dataset.shot === type));
+        if (!$('gameScreen').hidden) notify(`${type.toUpperCase()} selected`);
+      }
       function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
       function resize() {
@@ -306,13 +635,17 @@
 
       function ballPosition() {
         const p = Math.max(0, Math.min(1, progress));
-        const x = width * 0.5 + Math.sin(p * 2.4) * width * 0.004;
-        const y = height * (0.39 + p * 0.39 - Math.sin(p * Math.PI) * 0.13);
+        const movement = deliveryType ? deliveryType.swing : .4;
+        const x = width * 0.5 + Math.sin(p * 2.4) * width * 0.004 + Math.sin(p * Math.PI) * width * .018 * movement;
+        const bounce = settings.pitch === 'bouncy' ? .17 : settings.pitch === 'green' ? .145 : settings.pitch === 'dry' ? .11 : .13;
+        const y = height * (0.39 + p * 0.39 - Math.sin(p * Math.PI) * bounce);
         return { x, y };
       }
 
       function draw(now) {
-        if (!width || !height) return;
+        frameHandle = 0;
+        if (!width || !height || $('gameScreen').hidden) return;
+        pollController();
         ctx.clearRect(0, 0, width, height);
         drawStadium(now);
         let ball = null;
@@ -328,22 +661,45 @@
         }
         drawPlayers(now);
         if (ball) drawBall(ball.x, ball.y, phase === 'shot' && lofted ? 1.22 : 1);
-        requestAnimationFrame(draw);
+        frameHandle = requestAnimationFrame(draw);
+      }
+
+      function pollController() {
+        if ($('gameScreen').hidden || !navigator.getGamepads) return;
+        const pad = Array.from(navigator.getGamepads()).find(Boolean);
+        if (!pad) return;
+        const pressed = (index) => !!pad.buttons[index]?.pressed;
+        const edge = (index) => pressed(index) && !gamepadPrevious[index];
+        if (edge(0)) tryShot();
+        if (edge(9)) action();
+        if (edge(1)) $('toggleLoft').click();
+        if (edge(2)) callRun();
+        if (edge(14)) setAim(aim - .16);
+        if (edge(15)) setAim(aim + .16);
+        const axis = pad.axes[0] || 0;
+        if (axis < -.72 && !gamepadPrevious.axisLeft) setAim(aim - .16);
+        if (axis > .72 && !gamepadPrevious.axisRight) setAim(aim + .16);
+        gamepadPrevious = pad.buttons.map((button) => button.pressed);
+        gamepadPrevious.axisLeft = axis < -.35;
+        gamepadPrevious.axisRight = axis > .35;
       }
 
       function drawStadium(now) {
+        const venue = venueData[settings.stadium] || venueData.harbor;
+        const cloudy = settings.weather === 'cloudy';
+        const night = settings.stadium === 'city' || settings.weather === 'dew';
         const sky = ctx.createLinearGradient(0, 0, 0, height);
-        sky.addColorStop(0, '#173b44'); sky.addColorStop(.38, '#315556'); sky.addColorStop(.40, '#347b4d'); sky.addColorStop(1, '#123f2a');
+        sky.addColorStop(0, night ? '#111d3d' : cloudy ? '#33434a' : venue.sky); sky.addColorStop(.38, cloudy ? '#485b58' : night ? '#304361' : '#315556'); sky.addColorStop(.40, '#347b4d'); sky.addColorStop(1, '#123f2a');
         ctx.fillStyle = sky; ctx.fillRect(0, 0, width, height);
         const cx = width * .5, cy = height * .78;
         ctx.save();
         ctx.beginPath(); ctx.ellipse(cx, cy, width * .51, height * .72, 0, 0, Math.PI * 2); ctx.clip();
         const grass = ctx.createRadialGradient(cx, height * .57, height * .05, cx, cy, width * .62);
-        grass.addColorStop(0, '#53a95b'); grass.addColorStop(.55, '#247840'); grass.addColorStop(1, '#0e402b');
+        grass.addColorStop(0, settings.weather === 'dew' ? '#65ad68' : '#53a95b'); grass.addColorStop(.55, venue.grass); grass.addColorStop(1, '#0e402b');
         ctx.fillStyle = grass; ctx.fillRect(0, height * .28, width, height * .9);
         for (let band = 0; band < 6; band++) {
           const y = height * (.10 + band * .045);
-          ctx.fillStyle = band % 2 ? '#16383b' : '#1d4648';
+          ctx.fillStyle = band % 2 ? venue.stand : night ? '#222d4b' : '#1d4648';
           ctx.fillRect(0, y, width, height * .036);
         }
         // Small repeated crowd lights give the bowl a lively, generic stadium feel.
@@ -352,7 +708,7 @@
           for (let i = 0; i < 145; i++) {
             const x = (i / 144) * width;
             const wave = Math.sin(i * .13 + row * 2.1) * height * .009;
-            const palette = ['#e3bb72', '#d77d50', '#84c49b', '#e8e6d5'];
+            const palette = [teams[0].accent, teams[1].accent, '#84c49b', '#e8e6d5'];
             ctx.fillStyle = palette[(i * 7 + row * 3) % palette.length];
             ctx.globalAlpha = .38 + .23 * Math.sin(now / 700 + i * .31 + row);
             ctx.fillRect(x, y + wave, Math.max(1.2, width / 470), Math.max(2, height * .012));
@@ -360,6 +716,10 @@
         }
         ctx.globalAlpha = 1;
         ctx.restore();
+        if (cloudy) {
+          ctx.fillStyle = '#c7d6d044';
+          for (let i = 0; i < 4; i++) { const x = width * (.14 + i * .23 + Math.sin(now / 5500 + i) * .025); const y = height * (.13 + (i % 2) * .055); ctx.beginPath(); ctx.ellipse(x, y, width * .09, height * .035, 0, 0, Math.PI * 2); ctx.fill(); }
+        }
         // Boundary oval and subtly mown outfield bands.
         ctx.strokeStyle = '#e5d39a'; ctx.lineWidth = Math.max(1.3, width * .0023);
         ctx.beginPath(); ctx.ellipse(cx, height * .79, width * .47, height * .64, 0, 0, Math.PI * 2); ctx.stroke();
@@ -368,10 +728,11 @@
           ctx.beginPath(); ctx.ellipse(cx, height * .79, width * (.47 - i * .035), height * (.64 - i * .042), 0, 0, Math.PI * 2); ctx.stroke();
         }
         // Pitch perspective, crease, and wicket marks.
-        ctx.fillStyle = '#c3a074'; ctx.beginPath();
+        const pitchColor = settings.pitch === 'green' ? '#8d9a69' : settings.pitch === 'dry' ? '#b58a54' : settings.pitch === 'bouncy' ? '#cdb087' : venue.pitch;
+        ctx.fillStyle = pitchColor; ctx.beginPath();
         ctx.moveTo(width * .462, height * .39); ctx.lineTo(width * .538, height * .39);
         ctx.lineTo(width * .60, height * .84); ctx.lineTo(width * .40, height * .84); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = '#d6bd91'; ctx.beginPath();
+        ctx.fillStyle = settings.pitch === 'green' ? '#b8bc8a' : settings.pitch === 'dry' ? '#d0ab70' : '#d6bd91'; ctx.beginPath();
         ctx.moveTo(width * .472, height * .40); ctx.lineTo(width * .528, height * .40); ctx.lineTo(width * .57, height * .82); ctx.lineTo(width * .43, height * .82); ctx.closePath(); ctx.fill();
         ctx.strokeStyle = '#fff8e8'; ctx.lineWidth = Math.max(1.4, width * .0024);
         for (const y of [height * .455, height * .775]) {
@@ -382,7 +743,7 @@
         // Floodlight haze.
         for (const x of [width * .06, width * .94]) {
           const glow = ctx.createRadialGradient(x, height * .10, 0, x, height * .10, height * .14);
-          glow.addColorStop(0, '#e8ffd05a'); glow.addColorStop(1, '#e8ffd000');
+          glow.addColorStop(0, night ? '#e8ffd080' : '#e8ffd05a'); glow.addColorStop(1, '#e8ffd000');
           ctx.fillStyle = glow; ctx.fillRect(x - height * .14, 0, height * .28, height * .28);
           ctx.fillStyle = '#efffd9'; ctx.beginPath(); ctx.arc(x, height * .085, Math.max(2, height * .006), 0, Math.PI * 2); ctx.fill();
         }
@@ -393,8 +754,8 @@
         const batterY = height * .75;
         const bowlerX = width * .5, bowlerY = height * .46;
         // Simplified fictional player silhouettes with smooth shadowing.
-        drawPlayer(bowlerX, bowlerY, '#dd7148', 0.58, now);
-        drawPlayer(batterX, batterY, '#287ed2', 0.90, now);
+        drawPlayer(bowlerX, bowlerY, teams[1 - battingTeamIndex].color, 0.58, now);
+        drawPlayer(batterX, batterY, teams[battingTeamIndex].color, 0.90, now);
         // stumps at the batting end
         ctx.strokeStyle = '#f4e8cd'; ctx.lineWidth = Math.max(1.6, width * .0028);
         for (let i = -1; i <= 1; i++) {
@@ -439,6 +800,30 @@
       }
       function lerp(a, b, t) { return a + (b - a) * t; }
 
+      $('quickPlay').addEventListener('click', openSetup);
+      document.querySelectorAll('[data-mode]').forEach((button) => button.addEventListener('click', () => {
+        if (button.dataset.mode === 'quick') openSetup();
+        else if (button.dataset.mode === 'practice') { notify('Practice drills are planned. Quick Play is open for shot practice now.'); openSetup(); }
+        else notify(`${button.querySelector('strong').textContent} is on the development roadmap.`);
+      }));
+      $('backHome').addEventListener('click', () => showScreen('homeScreen'));
+      $('setupBack').addEventListener('click', () => showScreen('homeScreen'));
+      $('toToss').addEventListener('click', openToss);
+      $('tossBack').addEventListener('click', () => showScreen('setupScreen'));
+      $('teamSelectA').addEventListener('change', updateTeamPreviews);
+      $('teamSelectB').addEventListener('change', updateTeamPreviews);
+      document.querySelectorAll('[data-format]').forEach((button) => button.addEventListener('click', () => {
+        settings.format = button.dataset.format;
+        $('oversSelect').value = String(formatPresets[settings.format].overs);
+        document.querySelectorAll('[data-format]').forEach((item) => item.classList.toggle('selected', item === button));
+        updateSetupSummary();
+      }));
+      ['oversSelect','stadiumSelect','weatherSelect','pitchSelect','difficultySelect'].forEach((id) => $(id).addEventListener('change', updateSetupSummary));
+      document.querySelectorAll('[data-call]').forEach((button) => button.addEventListener('click', () => flipToss(button.dataset.call)));
+      document.querySelectorAll('[data-decision]').forEach((button) => button.addEventListener('click', () => launchMatch(button.dataset.decision)));
+      $('startAfterToss').addEventListener('click', () => launchMatch('auto'));
+      $('restartMatch').addEventListener('click', () => { resetMatch(); notify('Match restarted.'); });
+      document.querySelectorAll('[data-shot]').forEach((button) => button.addEventListener('click', () => chooseShot(button.dataset.shot)));
       $('mainBtn').addEventListener('click', action);
       $('shotBtn').addEventListener('click', tryShot);
       $('aimLeft').addEventListener('click', () => setAim(aim - .22));
@@ -448,8 +833,28 @@
         $('toggleLoft').innerHTML = `${lofted ? 'LOFTED' : 'GROUND'}<span class="key">SHIFT</span>`;
       });
       $('runBtn').addEventListener('click', callRun);
+      canvas.addEventListener('pointerdown', (event) => {
+        if (phase !== 'delivery') return;
+        touchStart = { x:event.clientX, y:event.clientY };
+        if (canvas.setPointerCapture) canvas.setPointerCapture(event.pointerId);
+      });
+      canvas.addEventListener('pointerup', (event) => {
+        if (!touchStart || phase !== 'delivery') { touchStart = null; return; }
+        const dx = event.clientX - touchStart.x, dy = event.clientY - touchStart.y;
+        touchStart = null;
+        if (Math.hypot(dx,dy) < 12) return;
+        const rect = canvas.getBoundingClientRect();
+        setAim(aim + dx / Math.max(1, rect.width) * 2.5);
+        if (dy < -22) {
+          lofted = true; $('toggleLoft').classList.add('on'); $('toggleLoft').setAttribute('aria-pressed','true'); $('toggleLoft').innerHTML = 'LOFTED<span class="key">SHIFT</span>';
+        } else if (dy > 30) {
+          lofted = false; $('toggleLoft').classList.remove('on'); $('toggleLoft').setAttribute('aria-pressed','false'); $('toggleLoft').innerHTML = 'GROUND<span class="key">SHIFT</span>';
+        }
+        tryShot();
+      });
       window.addEventListener('keydown', (event) => {
         if (event.repeat) return;
+        if ($('gameScreen').hidden) return;
         if (event.code === 'Enter') { event.preventDefault(); action(); }
         else if (event.code === 'Space') { event.preventDefault(); tryShot(); }
         else if (event.code === 'ArrowLeft') { event.preventDefault(); setAim(aim - .16); }
@@ -458,12 +863,17 @@
         else if (event.code === 'KeyA') batterMove = Math.max(-1, batterMove - .18);
         else if (event.code === 'KeyD') batterMove = Math.min(1, batterMove + .18);
         else if (event.code === 'KeyR') callRun();
+        else if (event.code === 'Digit1') chooseShot('drive');
+        else if (event.code === 'Digit2') chooseShot('cut');
+        else if (event.code === 'Digit3') chooseShot('pull');
+        else if (event.code === 'Digit4') chooseShot('sweep');
+        else if (event.code === 'Digit5') chooseShot('defend');
       });
 
       const observer = new ResizeObserver(resize);
       observer.observe(canvas);
       window.addEventListener('orientationchange', () => setTimeout(resize, 150));
-      resetMatch(); resize(); requestAnimationFrame(draw);
+      buildTeamSelectors(); updateSetupSummary(); showScreen('homeScreen'); resize();
       $('repoLink').href = 'https://github.com/samirlevate8788-creator/cricket-universe-game';
     })();
   </script>
