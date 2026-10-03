@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#071b20">
-  <meta name="description" content="Cricket Universe — an original, accessible cricket game prototype with quick match setup and skill-based batting.">
+  <meta name="description" content="Cricket Universe — an original 3D cricket game prototype with a broadcast stadium, skill-based batting and touch, keyboard and controller support.">
   <title>Cricket Universe — Play Your Moment</title>
   <style>
     :root {
@@ -48,10 +48,14 @@
     .sep { width: 3px; height: 3px; border-radius: 9px; background: #627e75; }
     .stage { position: relative; height: clamp(270px, 47vw, 480px); overflow: hidden; border-radius: 22px; border: 1px solid #96d0ac26; background: #0b2428; box-shadow: 0 25px 70px #0004; }
     canvas { width: 100%; height: 100%; display: block; }
-    .stage-top { position: absolute; inset: 13px 14px auto; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none; }
+    .stage canvas { touch-action: none; }
+    .stage-top { position: absolute; inset: 13px 14px auto; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; pointer-events: none; }
     .phase-chip, .aim-chip { display: inline-flex; gap: 8px; align-items: center; border: 1px solid #d1ead429; border-radius: 999px; padding: 8px 11px; background: #061b1dcc; backdrop-filter: blur(10px); font-size: 10px; letter-spacing: .12em; font-weight: 800; }
+    .phase-chip, .aim-chip, .camera-toggle { white-space: nowrap; flex: 0 0 auto; }
     .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 12px var(--mint); }
     .aim-chip { color: #d3e6dc; }
+    .camera-toggle { pointer-events: auto; border: 1px solid #d1ead429; border-radius: 999px; padding: 8px 11px; background: #061b1dcc; color: #d3e6dc; backdrop-filter: blur(10px); font-size: 10px; letter-spacing: .1em; font-weight: 850; cursor: pointer; }
+    .camera-toggle:hover { border-color: #70e2b4a6; color: #73edbb; }
     .callout { position: absolute; inset: auto 12px 13px; display: flex; justify-content: center; pointer-events: none; }
     .callout span { max-width: 94%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 9px 15px; border: 1px solid #d1ead42c; border-radius: 999px; background: #061b1ddf; color: #f2f6ec; font-size: 12px; font-weight: 750; letter-spacing: .03em; box-shadow: 0 5px 22px #0003; }
     .timing { padding: 18px 2px 10px; }
@@ -162,7 +166,7 @@
       .stats { gap: 6px; font-size: 9px; padding-top: 10px; }
       .stage { height: clamp(260px, 67vw, 390px); border-radius: 17px; }
       .stage-top { inset: 9px 9px auto; }
-      .phase-chip, .aim-chip { font-size: 8px; padding: 7px 8px; }
+      .phase-chip, .aim-chip, .camera-toggle { font-size: 8px; padding: 7px 7px; letter-spacing: .045em; }
       .callout span { font-size: 10px; }
       .timing { padding-top: 14px; }
       .controls { grid-template-columns: 1fr; gap: 9px; }
@@ -187,11 +191,15 @@
       .setup-footer .btn { flex:1; }
       .game-meta { display:none; }
     }
-    @media (max-width: 390px) {
+    @media (max-width: 420px) {
       .mode-tag { letter-spacing: .07em; }
       .brand h1 { letter-spacing: .08em; }
       .score { font-size: 22px; }
       .stage { height: 250px; }
+      .stage-top { gap: 4px; }
+      .phase-chip, .aim-chip, .camera-toggle { font-size: 7px; padding: 6px 6px; }
+      .aim-chip { gap: 4px; }
+      .aim-prefix, .aim-chip #aimLabel { display: none; }
       .hero-copy { max-width:88%; }
       .team-picks { grid-template-columns:1fr; }
       .toss-panel { min-height:350px; padding:20px; }
@@ -305,7 +313,8 @@
         <canvas id="stadium" aria-label="Animated fictional cricket stadium. Swipe during a delivery to aim and play a shot."></canvas>
         <div class="stage-top">
           <span class="phase-chip"><i class="live-dot"></i><span id="phaseLabel">READY TO BOWL</span></span>
-          <span class="aim-chip"><span id="deliveryLabel">GOOD LENGTH</span>&nbsp; · &nbsp;AIM <b id="aimLabel">STRAIGHT</b></span>
+          <button id="cameraBtn" class="camera-toggle" type="button" aria-label="Change broadcast camera">BROADCAST</button>
+          <span class="aim-chip"><span id="deliveryLabel">GOOD LENGTH</span><span class="aim-prefix">&nbsp; · &nbsp;AIM</span><b id="aimLabel">STRAIGHT</b></span>
         </div>
         <div class="callout"><span id="callout" aria-live="assertive">Your innings. Bowl when ready.</span></div>
       </section>
@@ -336,12 +345,13 @@
     <footer id="gameFooter" class="footer" hidden><span>Original fictional cricket prototype · Full-length formats are roadmap features</span><a href="https://github.com/samirlevate8788-creator/cricket-universe-game" target="_blank" rel="noreferrer">SOURCE ↗</a></footer>
   </main>
 
-  <script>
+  <script type="module">
+    import { createMatchView } from './match3d.js';
+
     (() => {
       'use strict';
       const $ = (id) => document.getElementById(id);
       const canvas = $('stadium');
-      const ctx = canvas.getContext('2d');
       const teamCatalog = [
         { id:'harbor', name:'Harbor Hawks', short:'HH', color:'#34b881', accent:'#b7f0d0', strength:'Balanced' },
         { id:'summit', name:'Summit Strikers', short:'SS', color:'#287ed2', accent:'#c5e1ff', strength:'Power batting' },
@@ -364,10 +374,19 @@
       let teams = [teamCatalog[0], teamCatalog[1]];
       const config = { overs: 2, wickets: 3, target: null, deliveryMs: 1050, perfectWindow: 0.055, goodWindow: 0.16 };
       let innings, teamScores, teamWickets, currentInnings, target, battingTeamIndex, startingBattingTeamIndex = 0, tossWinnerIndex, userTossWon, phase, status, progress, deliveryStarted;
-      let shotStarted, shotStartPoint, shotEndPoint, shotApex, pendingRuns, pendingWicket, quickRun, aim, lofted, batterMove, timingGrade, shotType = 'drive', deliveryType, lastFrame = 0;
+      let shotStarted, shotStartPoint, shotEndPoint, shotApex, pendingRuns, pendingWicket, quickRun, aim, lofted, batterMove, timingGrade, shotType = 'drive', deliveryType;
       let settings = { format:'quick', stadium:'harbor', weather:'sunny', pitch:'flat', difficulty:'standard' };
       let toastTimer = 0, touchStart = null, gamepadPrevious = [];
-      let width = 0, height = 0, dpr = 1, frameHandle = 0;
+      let width = 0, height = 0, frameHandle = 0;
+      let gameView = null;
+
+      function ensureGameView() {
+        if (!gameView) {
+          gameView = createMatchView(canvas, () => ({ settings, deliveryType, aim }));
+          $('cameraBtn').textContent = gameView.cameraLabel;
+        }
+        return gameView;
+      }
 
       function showScreen(name) {
         ['homeScreen','setupScreen','tossScreen','gameScreen'].forEach((id) => $(id).hidden = id !== name);
@@ -459,7 +478,14 @@
       function launchMatch(decision) {
         battingTeamIndex = tossWinnerIndex === 0 ? (decision === 'bat' ? 0 : 1) : (window.aiTossDecision === 'bat' ? 1 : 0);
         startingBattingTeamIndex = battingTeamIndex;
-        resetMatch(); showScreen('gameScreen');
+        try {
+          ensureGameView();
+          resetMatch(); showScreen('gameScreen');
+        } catch (error) {
+          console.error('Unable to start the 3D match view.', error);
+          notify('This browser could not start the 3D stadium. Try a browser with WebGL enabled.');
+          showScreen('homeScreen');
+        }
       }
 
       function resetMatch() {
@@ -544,10 +570,10 @@
         const baseDistance = timingGrade === 'PERFECT' ? (lofted ? 48 : 38) : timingGrade === 'GOOD' ? (lofted ? 37 : 28) : 16;
         const distance = baseDistance * style.power * (settings.pitch === 'flat' ? 1.08 : settings.pitch === 'slow' ? .84 : 1);
         const effectiveAim = Math.max(-1, Math.min(1, aim + style.side));
-        const side = effectiveAim * distance * 0.5;
+        const side = effectiveAim * distance * 0.24;
         const forward = distance * Math.sqrt(1 - effectiveAim * effectiveAim * 0.25);
-        shotEndPoint = { x: width * 0.5 + side / 90 * width, y: height * 0.85 - forward / 90 * height };
-        shotApex = lofted && shotType !== 'defend' ? height * 0.42 : timingGrade === 'PERFECT' ? height * 0.18 : height * 0.08;
+        shotEndPoint = { x: shotStartPoint.x + side / 2.5, y: 0.18, z: shotStartPoint.z - forward * 0.58 };
+        shotApex = lofted && shotType !== 'defend' ? 6.2 : timingGrade === 'PERFECT' ? 1.15 : timingGrade === 'GOOD' ? 0.6 : 0.28;
         const six = shotType !== 'defend' && timingGrade === 'PERFECT' && lofted && Math.random() < (settings.pitch === 'flat' ? .82 : .65);
         const boundary = shotType !== 'defend' && (timingGrade === 'PERFECT' || timingGrade === 'GOOD' && Math.random() < (lofted ? 0.38 : 0.28));
         if (timingGrade === 'PERFECT') pendingRuns = six ? 6 : boundary ? 4 : randInt(1, 3);
@@ -567,7 +593,7 @@
       function missDelivery() {
         if (phase !== 'delivery') return;
         phase = 'shot'; shotStarted = performance.now(); timingGrade = 'MISS';
-        shotStartPoint = ballPosition(); shotEndPoint = { x: width * 0.5, y: height * 0.81 }; shotApex = 0;
+        shotStartPoint = ballPosition(); shotEndPoint = { x: 0, y: 0.28, z: shotStartPoint.z + 1.4 }; shotApex = 0;
         pendingRuns = 0; pendingWicket = Math.random() < (settings.difficulty === 'pro' ? .34 : .28); quickRun = false;
         status = pendingWicket ? 'Bowled! The stumps are hit.' : 'Beaten by the delivery. Dot ball.';
         $('shotBtn').disabled = true;
@@ -627,40 +653,27 @@
 
       function resize() {
         const rect = canvas.getBoundingClientRect();
-        dpr = Math.min(window.devicePixelRatio || 1, 2);
         width = Math.max(1, rect.width); height = Math.max(1, rect.height);
-        canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        if (gameView && rect.width > 0 && rect.height > 0) gameView.resize();
       }
 
       function ballPosition() {
-        const p = Math.max(0, Math.min(1, progress));
-        const movement = deliveryType ? deliveryType.swing : .4;
-        const x = width * 0.5 + Math.sin(p * 2.4) * width * 0.004 + Math.sin(p * Math.PI) * width * .018 * movement;
-        const bounce = settings.pitch === 'bouncy' ? .17 : settings.pitch === 'green' ? .145 : settings.pitch === 'dry' ? .11 : .13;
-        const y = height * (0.39 + p * 0.39 - Math.sin(p * Math.PI) * bounce);
-        return { x, y };
+        return ensureGameView().ballPosition(progress);
       }
 
       function draw(now) {
         frameHandle = 0;
         if (!width || !height || $('gameScreen').hidden) return;
         pollController();
-        ctx.clearRect(0, 0, width, height);
-        drawStadium(now);
-        let ball = null;
         if (phase === 'delivery') {
           progress = Math.min(1, (now - deliveryStarted) / config.deliveryMs);
-          ball = ballPosition();
           $('needle').style.left = `${progress * 100}%`;
           if (progress >= 1) { missDelivery(); }
         } else if (phase === 'shot') {
-          const p = Math.min(1, (now - shotStarted) / 1250);
-          ball = { x: lerp(shotStartPoint.x, shotEndPoint.x, p), y: lerp(shotStartPoint.y, shotEndPoint.y, p) - Math.sin(p * Math.PI) * shotApex };
-          if (p >= 1) { ball = null; resolveDelivery(); }
+          if ((now - shotStarted) / 1250 >= 1) resolveDelivery();
         }
-        drawPlayers(now);
-        if (ball) drawBall(ball.x, ball.y, phase === 'shot' && lofted ? 1.22 : 1);
+        const state = { phase, progress, deliveryType, shotStarted, shotStartPoint, shotEndPoint, shotApex, pendingWicket, teams, battingTeamIndex, batterMove, settings };
+        ensureGameView().render(now, state);
         frameHandle = requestAnimationFrame(draw);
       }
 
@@ -674,6 +687,7 @@
         if (edge(9)) action();
         if (edge(1)) $('toggleLoft').click();
         if (edge(2)) callRun();
+        if (edge(3)) changeCamera();
         if (edge(14)) setAim(aim - .16);
         if (edge(15)) setAim(aim + .16);
         const axis = pad.axes[0] || 0;
@@ -684,122 +698,10 @@
         gamepadPrevious.axisRight = axis > .35;
       }
 
-      function drawStadium(now) {
-        const venue = venueData[settings.stadium] || venueData.harbor;
-        const cloudy = settings.weather === 'cloudy';
-        const night = settings.stadium === 'city' || settings.weather === 'dew';
-        const sky = ctx.createLinearGradient(0, 0, 0, height);
-        sky.addColorStop(0, night ? '#111d3d' : cloudy ? '#33434a' : venue.sky); sky.addColorStop(.38, cloudy ? '#485b58' : night ? '#304361' : '#315556'); sky.addColorStop(.40, '#347b4d'); sky.addColorStop(1, '#123f2a');
-        ctx.fillStyle = sky; ctx.fillRect(0, 0, width, height);
-        const cx = width * .5, cy = height * .78;
-        ctx.save();
-        ctx.beginPath(); ctx.ellipse(cx, cy, width * .51, height * .72, 0, 0, Math.PI * 2); ctx.clip();
-        const grass = ctx.createRadialGradient(cx, height * .57, height * .05, cx, cy, width * .62);
-        grass.addColorStop(0, settings.weather === 'dew' ? '#65ad68' : '#53a95b'); grass.addColorStop(.55, venue.grass); grass.addColorStop(1, '#0e402b');
-        ctx.fillStyle = grass; ctx.fillRect(0, height * .28, width, height * .9);
-        for (let band = 0; band < 6; band++) {
-          const y = height * (.10 + band * .045);
-          ctx.fillStyle = band % 2 ? venue.stand : night ? '#222d4b' : '#1d4648';
-          ctx.fillRect(0, y, width, height * .036);
-        }
-        // Small repeated crowd lights give the bowl a lively, generic stadium feel.
-        for (let row = 0; row < 5; row++) {
-          const y = height * (.115 + row * .043);
-          for (let i = 0; i < 145; i++) {
-            const x = (i / 144) * width;
-            const wave = Math.sin(i * .13 + row * 2.1) * height * .009;
-            const palette = [teams[0].accent, teams[1].accent, '#84c49b', '#e8e6d5'];
-            ctx.fillStyle = palette[(i * 7 + row * 3) % palette.length];
-            ctx.globalAlpha = .38 + .23 * Math.sin(now / 700 + i * .31 + row);
-            ctx.fillRect(x, y + wave, Math.max(1.2, width / 470), Math.max(2, height * .012));
-          }
-        }
-        ctx.globalAlpha = 1;
-        ctx.restore();
-        if (cloudy) {
-          ctx.fillStyle = '#c7d6d044';
-          for (let i = 0; i < 4; i++) { const x = width * (.14 + i * .23 + Math.sin(now / 5500 + i) * .025); const y = height * (.13 + (i % 2) * .055); ctx.beginPath(); ctx.ellipse(x, y, width * .09, height * .035, 0, 0, Math.PI * 2); ctx.fill(); }
-        }
-        // Boundary oval and subtly mown outfield bands.
-        ctx.strokeStyle = '#e5d39a'; ctx.lineWidth = Math.max(1.3, width * .0023);
-        ctx.beginPath(); ctx.ellipse(cx, height * .79, width * .47, height * .64, 0, 0, Math.PI * 2); ctx.stroke();
-        ctx.strokeStyle = '#8fcb7b27'; ctx.lineWidth = 1;
-        for (let i = 1; i < 7; i++) {
-          ctx.beginPath(); ctx.ellipse(cx, height * .79, width * (.47 - i * .035), height * (.64 - i * .042), 0, 0, Math.PI * 2); ctx.stroke();
-        }
-        // Pitch perspective, crease, and wicket marks.
-        const pitchColor = settings.pitch === 'green' ? '#8d9a69' : settings.pitch === 'dry' ? '#b58a54' : settings.pitch === 'bouncy' ? '#cdb087' : venue.pitch;
-        ctx.fillStyle = pitchColor; ctx.beginPath();
-        ctx.moveTo(width * .462, height * .39); ctx.lineTo(width * .538, height * .39);
-        ctx.lineTo(width * .60, height * .84); ctx.lineTo(width * .40, height * .84); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = settings.pitch === 'green' ? '#b8bc8a' : settings.pitch === 'dry' ? '#d0ab70' : '#d6bd91'; ctx.beginPath();
-        ctx.moveTo(width * .472, height * .40); ctx.lineTo(width * .528, height * .40); ctx.lineTo(width * .57, height * .82); ctx.lineTo(width * .43, height * .82); ctx.closePath(); ctx.fill();
-        ctx.strokeStyle = '#fff8e8'; ctx.lineWidth = Math.max(1.4, width * .0024);
-        for (const y of [height * .455, height * .775]) {
-          ctx.beginPath(); ctx.moveTo(width * .425, y); ctx.lineTo(width * .575, y); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(width * .447, y - height * .015); ctx.lineTo(width * .447, y + height * .015); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(width * .553, y - height * .015); ctx.lineTo(width * .553, y + height * .015); ctx.stroke();
-        }
-        // Floodlight haze.
-        for (const x of [width * .06, width * .94]) {
-          const glow = ctx.createRadialGradient(x, height * .10, 0, x, height * .10, height * .14);
-          glow.addColorStop(0, night ? '#e8ffd080' : '#e8ffd05a'); glow.addColorStop(1, '#e8ffd000');
-          ctx.fillStyle = glow; ctx.fillRect(x - height * .14, 0, height * .28, height * .28);
-          ctx.fillStyle = '#efffd9'; ctx.beginPath(); ctx.arc(x, height * .085, Math.max(2, height * .006), 0, Math.PI * 2); ctx.fill();
-        }
+      function changeCamera() {
+        const label = ensureGameView().cycleCamera();
+        $('cameraBtn').textContent = label;
       }
-
-      function drawPlayers(now) {
-        const batterX = width * (.5 + batterMove * .09);
-        const batterY = height * .75;
-        const bowlerX = width * .5, bowlerY = height * .46;
-        // Simplified fictional player silhouettes with smooth shadowing.
-        drawPlayer(bowlerX, bowlerY, teams[1 - battingTeamIndex].color, 0.58, now);
-        drawPlayer(batterX, batterY, teams[battingTeamIndex].color, 0.90, now);
-        // stumps at the batting end
-        ctx.strokeStyle = '#f4e8cd'; ctx.lineWidth = Math.max(1.6, width * .0028);
-        for (let i = -1; i <= 1; i++) {
-          ctx.beginPath(); ctx.moveTo(batterX + i * width * .009, batterY + height * .043); ctx.lineTo(batterX + i * width * .009, batterY + height * .069); ctx.stroke();
-        }
-        ctx.fillStyle = '#c99e61';
-        ctx.save(); ctx.translate(batterX + width * .02, batterY + height * .018); ctx.rotate(-.39);
-        ctx.fillRect(-width * .004, -height * .062, width * .009, height * .087); ctx.restore();
-      }
-
-      function drawPlayer(x, y, shirt, scale, now) {
-        const unit = Math.min(width, height) * .001;
-        ctx.save(); ctx.translate(x, y); ctx.scale(scale, scale);
-        ctx.fillStyle = '#071a16a8'; ctx.beginPath(); ctx.ellipse(0, height * .058, width * .022, height * .009, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#e4e9d9'; ctx.lineWidth = 4 * unit;
-        ctx.beginPath(); ctx.moveTo(-width * .005, height * .026); ctx.lineTo(-width * .009, height * .055); ctx.moveTo(width * .005, height * .026); ctx.lineTo(width * .011, height * .055); ctx.stroke();
-        ctx.fillStyle = shirt; roundedRect(ctx, -width * .011, -height * .002, width * .022, height * .035, 5 * unit); ctx.fill();
-        ctx.strokeStyle = shirt; ctx.lineWidth = 4 * unit;
-        const swing = phase === 'shot' && scale > .8 ? Math.sin((performance.now() - shotStarted) / 160) * .018 : 0;
-        ctx.beginPath(); ctx.moveTo(-width * .01, height * .007); ctx.lineTo(-width * .021, height * .027);
-        ctx.moveTo(width * .01, height * .007); ctx.lineTo(width * (.021 + swing), height * .025); ctx.stroke();
-        ctx.fillStyle = '#d8a477'; ctx.beginPath(); ctx.arc(0, -height * .012, height * .012, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#101b21'; ctx.beginPath(); ctx.arc(0, -height * .015, height * .013, Math.PI, Math.PI * 2); ctx.fill();
-        if (scale > .8) {
-          ctx.strokeStyle = '#ece6d5'; ctx.lineWidth = 2 * unit;
-          ctx.beginPath(); ctx.moveTo(-width * .012, height * .032); ctx.lineTo(-width * .017, height * .055); ctx.moveTo(width * .012, height * .032); ctx.lineTo(width * .016, height * .055); ctx.stroke();
-        }
-        ctx.restore();
-      }
-
-      function drawBall(x, y, scale) {
-        const r = Math.max(4, Math.min(width, height) * .012 * scale);
-        ctx.fillStyle = '#091c1780'; ctx.beginPath(); ctx.ellipse(x + r * .6, y + r * 2.3, r * 1.8, r * .75, 0, 0, Math.PI * 2); ctx.fill();
-        const shine = ctx.createRadialGradient(x - r * .35, y - r * .4, r * .1, x, y, r * 1.35);
-        shine.addColorStop(0, '#ff9a8a'); shine.addColorStop(.35, '#cf3440'); shine.addColorStop(1, '#6d1020');
-        ctx.fillStyle = shine; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#ffd3c4'; ctx.lineWidth = Math.max(1, r * .13); ctx.beginPath(); ctx.arc(x, y, r * .65, -.9, 1.1); ctx.stroke();
-      }
-
-      function roundedRect(context, x, y, w, h, r) {
-        context.beginPath(); context.roundRect(x, y, w, h, r);
-      }
-      function lerp(a, b, t) { return a + (b - a) * t; }
-
       $('quickPlay').addEventListener('click', openSetup);
       document.querySelectorAll('[data-mode]').forEach((button) => button.addEventListener('click', () => {
         if (button.dataset.mode === 'quick') openSetup();
@@ -833,6 +735,7 @@
         $('toggleLoft').innerHTML = `${lofted ? 'LOFTED' : 'GROUND'}<span class="key">SHIFT</span>`;
       });
       $('runBtn').addEventListener('click', callRun);
+      $('cameraBtn').addEventListener('click', changeCamera);
       canvas.addEventListener('pointerdown', (event) => {
         if (phase !== 'delivery') return;
         touchStart = { x:event.clientX, y:event.clientY };
@@ -873,7 +776,7 @@
       const observer = new ResizeObserver(resize);
       observer.observe(canvas);
       window.addEventListener('orientationchange', () => setTimeout(resize, 150));
-      buildTeamSelectors(); updateSetupSummary(); showScreen('homeScreen'); resize();
+      buildTeamSelectors(); updateSetupSummary(); showScreen('homeScreen');
       $('repoLink').href = 'https://github.com/samirlevate8788-creator/cricket-universe-game';
     })();
   </script>
